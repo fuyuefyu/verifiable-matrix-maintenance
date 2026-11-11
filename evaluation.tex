@@ -12,8 +12,7 @@ include initialization. The extension reuses the same seeds and retains
 its separate estimates. The connected study uses twenty same-tape pairs
 for $q=17$ replay, twenty fresh source-paired streams per encoding for
 $q=65521$ service, and twenty independent utility simulations, displaying
-the individual units in
-Figure~\ref{fig:application-results}.
+the individual units and full view diagnostics in the supplement.
 
 The fixed Covertype extension uses $b=8,t=2,k=256$ at
 $n\in\{256,512,1024\}$ on server GPU2 and $n\in\{512,1024\}$ on a
@@ -45,67 +44,22 @@ and five. These are evaluations of mathematical bounds and procedures,
 not measured attack probabilities.
 
 \input{figure_engine_scaling}
-\input{figure_view_costs}
-\input{figure_application_results}
 
 \subsection{Complete-update benefits and bottlenecks}
 At $n=4096,r=8,t=2$, checked GPU maintenance takes $83.162$\,ms
-against $161.931$\,ms for checked recomputation, with paired speedup
-$1.947\times$ ($[1.931,1.985]$). The $r=32$ sweep reaches
-$1.968\times$ ($[1.913,1.986]$). At $n=1024$ and $2048$, the
-$r=8$ gains are $1.167\times$ and $1.522\times$; the $n=512$
-interval $[0.959,1.105]$ includes parity. Figure~\ref{fig:engine-scaling} uses $q=65521$ and $k=8$: (a) complete-update
-latency on fy GPU0 with $r=8$ and $t=2$; (b) latency on fy GPU1 with
-$n=1024$ and $t=2$, tested widths at equal horizontal spacing; (c)
-within-seed checked/unchecked ratios on fy GPU1 with $n=1024$ and $r=8$.
-It also shows the update-width crossover: at $n=1024$, speedup falls
-from $1.256\times$ for $r=2$ to $0.997\times$ for $r=512$
-($[0.986,1.026]$). The complete pipeline's checking factors for
-$t=1,2,4,8$ are $1.130,1.101,1.099,1.111$; batched kernels and
-shared candidate costs prevent a linear extrapolation in $t$.
+against $161.931$\,ms for checked recomputation, a paired speedup of
+$1.947\times$ ($[1.931,1.985]$). The width sweep reaches $1.968\times$
+at $r=32$ and falls to parity at the largest widths. The complete
+pipeline's checking factors for $t=1,2,4,8$ are
+$1.130,1.101,1.099,1.111$; shared candidate costs prevent a linear
+extrapolation; the full scaling sweep is shown in Figure~\ref{fig:engine-scaling}.
 
-The structured Covertype view provides complementary reuse
-(Figure~\ref{fig:view-costs}). That figure uses 54 features over
-$\F_{65521}$ at $n=1024$, $b=8$, and $t=2$: (a,b) accumulate 256 updates on
-fy GPU2 and the Spark-ebaf CPU from round-zero initialization with
-applicable cache preparation; Full, incremental, and cached denote
-recomputation, incremental maintenance, and cached-factorized maintenance;
-(c) is a separate eight-update synchronized GPU diagnostic whose product,
-freezing, and checking medians are not additive. At $n=1024,b=8$, GPU incremental
-latency is $4.463$\,ms versus $5.712$\,ms, a paired $1.279\times$
-gain ($[1.227,1.280]$). Setup-inclusive medians over $256$ updates
-are $1750.736$, $1330.161$, and $1325.996$\,ms for recomputation,
-generic maintenance, and cached factorization. Caching adds little
-to the generic operator: its paired factor is $1.001$
-($[0.995,1.002]$). The batch-width sweep at $b=2,8,32$ likewise
-places all extra-cache intervals across parity.
-
-Synchronized diagnostics explain this result. At the same view size,
-full product construction takes $1.483$\,ms, versus $0.0702$\,ms
-for the generic increment and $0.0588$\,ms with caching. Generic
-candidate freezing takes $3.032$\,ms and checking $0.441$\,ms.
-Retaining the product removes a substantial stage; the additional
-cache optimizes a much smaller stage behind a common materialization
-cost. Separately summarized stage medians are not added to construct
-a total. Dense diagnostics show the same cost structure.
-
-Smaller views locate the useful regime: GPU speedups are $0.932$
-at $n=256$ and $0.982$ at $512$. At $n=512$ the new stream totals
-overlap broadly; the earlier collection's generic total was
-$807.668$\,ms versus $608.057$\,ms for recomputation. Stream length
-alone does not remove costs paid for every candidate. These complete
-collections remain in the artifact.
-
-The CPU extension at $n=1024$ takes $10.234$ versus $21.468$\,ms,
-giving $2.098\times$ ($[2.086,2.112]$). Its setup-inclusive totals
-are $2645.888$ versus $5520.294$\,ms; caching gives a further
-$1.020\times$ ($[1.010,1.029]$). Matched cached checking factors
-are $2.953$ on CPU and $1.110$ on GPU. Across the four GB10 devices,
-dense $n=1024,r=8$ speedups range from $1.225$ to $1.925$;
-one interval spans $[1.147,4.656]$, so devices are not pooled.
-The separate $q=2^{61}-1$ integer backend reaches $20.714\times$
-($[17.998,20.970]$) at $n=256,r=2$, and $8.699\times$
-($[8.506,8.752]$) at $r=8$. Those subsets use different Spark
-hosts and support within-cell comparisons.
+The structured Covertype view gives a second reuse regime, with the full
+diagnostic retained in the supplement. At $n=1024,b=8$, GPU incremental latency
+is $4.463$\,ms versus $5.712$\,ms, a paired $1.279\times$ gain
+($[1.227,1.280]$). The CPU extension reaches $2.098\times$
+($[2.086,2.112]$). Detailed cache diagnostics, device-specific intervals,
+and setup-inclusive stage timings are reported in the supplement and
+remain in the artifact.
 
 \input{application_results}

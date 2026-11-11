@@ -1,27 +1,19 @@
 \paragraph{Comparison with bilinear agreement bounds}
 \label{sec:profile-comparison}
-For this comparison let $T(U,V)=UV^\top B$ be the fresh target and
-$D=T-F$ the discrepancy of an admitted program. Write
-$\operatorname{AR}(D)$, $\operatorname{GR}(D)$, and
-$\operatorname{SR}(D)$ for the analytic rank, the geometric rank, and the
-slice rank of $D$: AR is $-\log_q\Pr[D=0]$ for uniform bilinear inputs,
-GR is the codimension of the zero set over the algebraic closure, and SR
-is the least number of slices, each a linear form in one mode times a
-bilinear form in the other two. Cohen and Moshkovitz (CM) establish
-$\operatorname{AR}(D)\ge(1-\log_q2)\operatorname{GR}(D)$
+Cohen and Moshkovitz establish
+$\operatorname{AR}(D)\ge(1-\log_q2)\operatorname{GR}(D)$ and
+$\operatorname{AR}(D)=-\log_q\Pr[D=0]$ for uniform bilinear inputs
 \cite[Proposition~4.1 and Fact~4.5]{cohen2022structure}. Rectangular multiplication has geometric
 rank $g=nr-\lfloor r^2/4\rfloor$~\cite{kopparty2023geometric}
 and slice rank $nr$ even over the algebraic closure, by its
-semistability~\cite[Example~24 and Lemma~23]{christandl2023weighted};
-semistability here means that the zero tensor is not in the Zariski
-closure of the orbit under determinant-one basis changes in each mode.\footnote{If a slice decomposition uses dimensions $a_i$ in modes of
+semistability~\cite[Example~24 and Lemma~23]{christandl2023weighted}.\footnote{If a slice decomposition uses dimensions $a_i$ in modes of
 dimensions $m_i$ with $\sum_i a_i<\min_i m_i$, assign weights
 $1-a_i/m_i$ to its subspaces and $-a_i/m_i$ to their complements.
 After clearing denominators, each factor has total weight zero, while
 every supported tensor term has positive weight
 $\ge1-\sum_i a_i/m_i$. This contradicts semistability. The reverse
 bound follows by slicing a smallest mode.}
-Take slice rank over the algebraic closure.
+For $D=T-F$, take slice rank over the algebraic closure.
 Subadditivity gives $\operatorname{SR}(D)\ge nr-w$ and
 $\operatorname{GR}(D)\ge g-w$. Cohen--Moshkovitz's proof gives
 $\operatorname{SR}(D)\le2\operatorname{GR}(D)$ over that closure

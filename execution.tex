@@ -1,11 +1,9 @@
 \section{Execution and Resource Costs}\label{sec:execution}
 \subsection{Platforms and matched operators}
-The primary server (fy) has four RTX~5090 graphics processing units
-(GPUs). Four DGX Spark hosts (Spark1--Spark4) each provide a GB10 GPU and a
-20-core Arm central processing unit (CPU); the host Spark-ebaf (ebaf for
-short) supplies the Arm CPU measurements.
-Python~3.12.3, NumPy~2.5.4, and CuPy~14.2.0 support the word-size backend;
-Basic Linear Algebra Subprograms (BLAS) on the CPU use four threads. The large-field C++17 kernel is
+The primary server (fy) has four RTX~5090 GPUs. Four DGX Spark hosts
+(Spark1--Spark4) each provide a GB10 GPU and a 20-core Arm CPU.
+Python~3.12.3, NumPy~2.5.4, and CuPy~14.2.0 support the word-size
+backend; CPU BLAS uses four threads. The large-field C++17 kernel is
 single-threaded. The machines are shared and retain their existing
 workloads. Independent sweeps use separate devices; each host's
 long-stream extension runs sequentially.
@@ -19,7 +17,7 @@ fresh bilinear products from fixed-right transforms, verification, and
 state access. The theoretical model admits fast bilinear programs.
 
 \begin{table}[t]
-\caption{Direct per-round multiplication counts for full recomputation, incremental maintenance, and verification.}\label{tab:resource-counts}
+\caption{Direct multiplications per round when both pipelines maintain the left operand as part of the view.}\label{tab:resource-counts}
 \centering
 \begin{tabular}{lr}\toprule
 Operation & Multiplications\\\midrule
@@ -31,10 +29,10 @@ One incremental check vector & $2n^2+2nr$\\\bottomrule
 \end{table}
 
 \subsection{Exact arithmetic and candidate interface}
-The main backend uses $q=65521$ with canonical residues.
-Double-precision floating-point (FP64) general matrix multiplication
-(GEMM) evaluates each product, followed by conversion to signed 64-bit
-integers and modular reduction. Every tested inner dimension $d\le4096$ satisfies
+The main backend uses $q=65521$ with canonical residues. Double-precision
+(FP64) general matrix-matrix multiplication (GEMM)
+evaluates each product, followed by conversion to signed 64-bit integers
+and modular reduction. Every tested inner dimension $d\le4096$ satisfies
 \[
  d(q-1)^2\le4096\cdot65520^2<2^{44}<2^{53}.
 \]
@@ -58,9 +56,9 @@ alone occupies $64$\,MiB; the $r=8$ GPU run's maximum live-array
 allocation is $1.75$\,GB, including benchmark reset snapshots.
 
 \subsection{Structured analytical views}
-Let $X,Y\in\F_q^{n\times d}$ contain $n$ records with $d$ features, with
-$Y$ fixed. Maintain $A=XY^\top$ and $C=AB$. Replacing $b$ rows of $X$ with
-difference $D\in\F_q^{b\times d}$ and selector $E\in\F_q^{n\times b}$ gives
+With a fixed reference table $Y\in\F_q^{n\times d}$, maintain
+$A=XY^\top$ and $C=AB$. Replacing $b$ rows of $X$ with difference
+$D\in\F_q^{b\times d}$ and selector $E\in\F_q^{n\times b}$ gives
 \begin{equation}\label{eq:structured-update}
  \Delta A=E(DY^\top),\qquad \Delta C=E((DY^\top)B).
 \end{equation}
@@ -91,12 +89,11 @@ ablation removes only checking from the same candidate interface.
 Synchronized component diagnostics use separate runs and are not
 substituted for end-to-end latency.
 
-A complete update includes common maintenance, transfers, freezing,
-enabled checking, and state advancement. Each matrix-engine round is
-compared with a full product on the same backend; small products and
-selected coordinates are independently checked with Python integers. A mismatch stops that run. Live device arrays,
-reserved allocator memory, reset snapshots, and process-lifetime resident
-set size (RSS) are distinguished. The randomized-report service validates typed-plan
+Each matrix-engine round is compared with a full product on the same
+backend; small products and selected coordinates are independently
+checked with Python integers. A mismatch stops that run. Live device arrays,
+reserved allocator memory, reset snapshots, and process-lifetime RSS
+are distinguished. The randomized-report service validates typed-plan
 admission, candidate fixation, reject-without-advance, and per-round
 integer decoding; a post-stream integer reconstruction checks its complete
 decoded output. Its verification model and statistical

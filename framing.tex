@@ -1,173 +1,140 @@
 \begin{abstract}
-Incremental matrix maintenance reuses previous products, but output
-correctness alone does not quantify the fresh computation behind an
-accepted update. We derive work-sensitive acceptance bounds for a stateful
-finite-field interface: a homogeneous bilinear program is selected before
-fresh update factors arrive, and its complete candidate is fixed before
-random verification. The processor may retain arbitrary previously paid
-state. For uniform factors, conditioning on matrix rank yields an
-output-span agreement profile that improves the corresponding range-size
-estimate at every positive gate budget below the number of entries in one
-factor.
-A resource recursion composes the profiles under adaptive pathwise budgets,
-including incorrectly accepted intermediate states. Conditional linear
-escape extends the threshold guarantee to nonuniform factors. Balanced
-checking minimizes the homogeneous certificates, and an exact allocator
-minimizes the heterogeneous threshold certificate under equal check costs.
-A six-product $2\times2$ Strassen construction attains the single-round
-threshold bound. Exact-field experiments include candidate materialization
-and verification: at matrix dimension 4096, update width eight, and field
-size 65521, reuse reduces graphics-processor latency from $161.93$ to
-$83.16$\,ms, a paired $1.95\times$ speedup. Randomized categorical views
-connect report encoding, statistical accuracy, and fresh-work guarantees.
-At field size 17, parameter-aware checking allocation saves $10.4\%$ of checks
-relative to fixed-prefix round robin and $1.4\%$ of measured service and
-planning time over twenty processor sessions.
+Incremental matrix maintenance reuses previous products, but retained
+state also changes the fresh computation needed to obtain acceptance
+from an outsourced service. We study finite-field updates with arbitrary
+paid history and homogeneous bilinear programs fixed before fresh
+factors are disclosed. An output-space argument conditioned on the
+factor's rank yields an explicit agreement profile in the online gate
+budget. It strictly improves the corresponding uncapped range bound
+at every positive budget below $nr$. A resource recursion composes
+acceptance bounds under adaptive pathwise budgets, including incorrectly
+accepted intermediate states. Conditional linear escape extends the
+threshold guarantee to nonuniform inputs. Balancing minimizes both
+homogeneous bounds; an exact allocation algorithm handles heterogeneous
+rounds. A $2\times2$ six-product Strassen witness attains the single-round
+bound over every finite field. Exact-field implementations measure full
+updates, including candidate materialization and checks. At $n=4096$,
+update width eight, and $q=65521$, retaining the product reduces GPU
+latency from $161.93$ to $83.16$\,ms, a paired $1.95\times$ speedup.
+Covertype views exercise structured reuse and randomized categorical
+reports that instantiate the nonuniform guarantee. The resulting bounds
+identify encodings meeting a specified work target. In the $q=17$
+allocation study, adapting checks to round parameters saves $10.4\%$
+relative to fixed-prefix round robin, with the minimum certified by the
+exact allocator. The twenty-session CPU comparison saves $1.4\%$ of
+total service and planning time.
 \end{abstract}
 
 \section{Introduction}\label{sec:introduction}
-Matrix products arise in analytical views, matrix chains, and feature
-transformations that must remain current as records change. Incremental
-view maintenance exploits previous results rather than recomputing them;
-higher-order maintenance, linear-algebra programs, and factorized analytics
-provide established techniques for doing so\cite{dbtoaster,Linview2014,fivm}.
-Let $n$ be the matrix dimension, $r$ the update width with $n\ge r\ge2$,
-and $\F_q$ the finite field with $q$ elements. For
-$A,B\in\F_q^{n\times n}$ with $B$ fixed and invertible, the maintained
-product is $C=AB$. Fresh factors $U,V\in\F_q^{n\times r}$ specify
-$A'=A+UV^\top$, giving the standard update identity
+Matrix products support analytical views, matrix chains, and repeated
+feature transformations. Incremental view maintenance preserves these
+results as records arrive or change. DBToaster develops higher-order
+maintenance, LINVIEW treats linear-algebra programs, and F-IVM combines
+factorization with ring-based analytics
+\cite{dbtoaster,Linview2014,fivm}. For $C=AB$ and
+$A'=A+UV^\top$, the established identity
 \[
- C'=A'B=C+U(V^\top B).
+ C'=C+U(V^\top B)
 \]
-The identity reduces arithmetic through reuse. Our question is how that
-reuse interacts with verification when another processor supplies the
-updated product.
+reuses the previous product and exposes the computation associated with
+the new update.
 
+An outsourced service must also verify returned results and, when it
+accounts for useful computation, relate acceptance to work on newly
+disclosed inputs. These requirements interact with reuse. A prover can
+retain products, intermediate values, and arbitrary auxiliary state, and
+adapt its later programs and expenditure to earlier requests. A random
+projection checks a fixed candidate cheaply~\cite{freivalds}; bounding
+accepted computation additionally requires a work model and causal input
+order.
 
-\begin{figure*}[!t]
-  \centering
-  \includegraphics[width=\textwidth]{figures/ICDE_figure_simplified.pdf}
-  \caption{Database use case and verifiable incremental matrix maintenance.
-  (a) Covertype records yield randomized soil-type and elevation-band reports;
-  the schematic co-occurrence heatmap represents a decoded, debiased estimate,
-  not the retained modular state. (b) A cached product is updated using
-  $U(V^\top B)$ instead of full recomputation; the dense-GPU timing is a
-  separate workload. (c) The admitted bilinear program and gate count are
-  fixed before fresh factors arrive, and the complete candidate is fixed
-  before independent random checks. Acceptance advances the reference;
-  rejection ends the prescribed sequence.}
-  \label{fig:fresh-flow}
-\end{figure*}
+We use a fixed invertible $B\in\F_q^{n\times n}$. Before each pair of
+factors $U,V\in\F_q^{n\times r}$ is disclosed, the prover fixes a
+homogeneous bilinear straight-line program. Its coefficients may depend
+on its complete paid history. Work counts products between a linear form
+in $U$ and a linear form in $V$. The full candidate is fixed before the
+verifier samples independent checks. The interface permits arbitrary
+retained state while separating previous information from fresh inputs.
+Uniform factors yield an explicit work profile; fresh randomized
+categorical reports give a concrete nonuniform instance. The prototype
+realizes this interface with a trusted evaluator for admitted kernels.
 
-Figure~\ref{fig:fresh-flow} illustrates the motivating analytical view and
-the causal protocol. In the Covertype application, 40 soil categories and
-40 elevation bins of width 100\,m over $[0,4000)$ define the
-soil--elevation domain. Fresh randomized reports update a retained
-finite-field matrix; accepted report increments are decoded and debiased
-into a separate noisy co-occurrence estimate. The heatmap is schematic,
-not measured data. The latency annotation concerns a distinct
-$n=4096$, $r=8$, $t=2$, $q=65521$ dense-GPU experiment, rather than
-the Covertype view. The two causal boundaries allow reuse of arbitrary
-paid historical state, while the fresh-work certificate remains
-conditional on the admitted homogeneous bilinear program class and
-trusted kernel admission, not physical-work attestation.
+The main observation is that a $w$-gate program outputs into a fixed
+space of dimension at most $w$, whereas a fresh factor of rank $s$
+leaves the target uniform on a space of dimension $ns$. Keeping these
+rank strata until after the probability is truncated at one produces a
+strict improvement over the unconditional range bound. This refinement
+complements general bilinear agreement results~\cite{cohen2022structure}
+and the exact-computation tensor threshold.
 
-Random projections efficiently check a fixed candidate\cite{freivalds},
-but a correctness check does not by itself measure the computation used to
-produce it. A processor can retain earlier inputs, products, and auxiliary
-state, then adapt its computation to the observed history. Relating
-acceptance to fresh work therefore requires a bound that remains valid
-after each such history and composes across adaptively chosen updates.
-Incorrectly accepted intermediate products make this a stateful problem:
-the next check may start from a reference that is already wrong.
-
-We study a homogeneous bilinear interface in which a program with $w$
-gates is fixed before the current factors arrive. Each gate multiplies
-one linear form in $U$ by one in $V$; $w$ counts these products across all
-suppliers. Historical state may select the program, while the complete
-candidate precedes the verifier's independent random vectors.
-Section~\ref{sec:fresh-updates} specifies the interface and its cost
-accounting. The prototype realizes it through trusted kernel admission.
-
-The key insight is to retain the rank information in the agreement
-analysis. For independent uniform factors conditional on a fixed history,
-conditioning on $U$ of rank $s$ makes $UV^\top B$ uniform on an
-$ns$-dimensional matrix subspace. The program's outputs lie in the span
-of its coefficient matrices, whose dimension is at most $w$. Bounding
-their intersection within each rank stratum and then averaging yields an
-explicit agreement profile. It is strictly smaller than the capped
-range-size estimate for every integer $0<w<nr$. A backward resource
-recursion then converts these one-round profiles into a bound for a
-prescribed sequence under a work budget that holds on every execution
-path. This separates the effect of retained information from computation
-on the newly disclosed factors.
-
-Our contributions connect this analysis to checking decisions and
-maintained analytical state:
 \begin{itemize}
-\item \textbf{Work-sensitive, stateful bounds.} We derive the rank-conditioned
-agreement profile and its adaptive composition, including incorrect
-intermediate references (Lemma~\ref{ext:lem-output-span} and
-Theorem~\ref{ext:thm-profile-dp}). Conditional linear escape supplies
-threshold bounds for nonuniform factors.
-\item \textbf{Certificate-optimal checking.} We prove balanced allocation
-optimal for the homogeneous certificates and give an exact allocator for
-the heterogeneous threshold certificate under equal checking costs
-(Theorems~\ref{ext:thm-balanced} and~\ref{ext:thm-heterogeneous}).
-A six-product construction attains the single-round threshold bound
-(Theorem~\ref{ext:thm-sharpness}).
-\item \textbf{End-to-end evaluation and a nonuniform application.} Exact-field
-implementations measure reuse together with materialization and checks.
-Fresh randomized attribute reports instantiate the nonuniform assumptions
-and expose the relationship between encoding accuracy, work-target
-feasibility, and integrity-driven checking budgets
-(Sections~\ref{sec:execution}--\ref{sec:evaluation}).
+\item \textbf{Work-dependent acceptance.} We derive the rank-conditioned
+profile and compose it through a resource recursion under adaptive
+pathwise budgets. The proof includes incorrect accepted references
+(Lemma~\ref{ext:lem-output-span}, Theorem~\ref{ext:thm-profile-dp}).
+\item \textbf{Checking decisions and sharpness.} We prove optimal
+balancing for homogeneous rounds and exact pseudo-polynomial allocation
+for heterogeneous threshold bounds. A $2\times2$ six-product Strassen construction
+attains the general single-round bound
+(Theorems~\ref{ext:thm-sharpness}--\ref{ext:thm-heterogeneous}).
+\item \textbf{Maintained analytical state.} Matched exact-field
+implementations measure reuse, candidate materialization, and checking
+on dense updates and real-data views. Randomized per-attribute reports
+connect the nonuniform guarantee to a choice of encoding and verification
+budget (Sections~\ref{sec:execution}--\ref{sec:evaluation}).
 \end{itemize}
 
 \section{Related Work}\label{sec:related}
 \paragraph{Incremental analytics}
-DBToaster develops higher-order maintenance, LINVIEW treats linear-algebra
-programs, and F-IVM combines factorization with ring-based analytics
-\cite{dbtoaster,Linview2014,fivm}. These techniques optimize maintained
-values under updates. Our analysis adds a work-sensitive acceptance bound
-for a processor that retains state, while using the established product
-update as its application interface.
+Classical materialized-view work separates delta maintenance from full
+refresh and studies the maintenance of warehouse summaries
+\cite{gupta1995maintenance,mumick1997maintenance}. Continuous-query
+semantics and differential dataflow extend the same idea to streams and
+incremental collections \cite{arasu2003cql,mcsherry2013differential}.
+DBToaster, LINVIEW, and F-IVM establish the higher-order, factorized, and
+algebraic maintenance underlying our interface
+\cite{dbtoaster,Linview2014,fivm}. These systems optimize the maintained
+value; our contribution is a fresh-work acceptance bound that remains valid
+when a processor retains arbitrary state and the accepted reference may be
+wrong.
 
 \paragraph{Verification and useful work}
-Freivalds' random projections verify dense matrix products using quadratic
-field-operation cost per check\cite{freivalds}. Pantry supports verifiable
-computation over persistent storage\cite{Pantry2013}, while Dumas and Zucca
-amortize public matrix-vector verification through preprocessing
-\cite{DumasZucca2017}. These verification mechanisms concern output
-correctness; our certificates additionally relate acceptance to a fresh
-bilinear-work budget. Komargodski and Weinstein study useful-work proofs
-for arbitrary matrix multiplication, with their strongest security claim
-based on correlated low-rank linear systems\cite{kwesa}. Our guarantees
-are information-theoretic within the stated online program class.
-Alman's lookup-table algorithms distinguish finite-field bit complexity
-from arithmetic-gate counts\cite{alman_lookup}; our work accounting uses
-the latter, with other execution costs measured separately.
+Freivalds checks products by random projections, while Pantry and Dumas--Zucca
+address stateful or public matrix verification
+\cite{freivalds,Pantry2013,DumasZucca2017}. Cryptographic verifiable
+computation establishes non-interactive proofs for general circuits, from
+the outsourcing model of Gennaro et al. to Pinocchio and succinct
+zero-knowledge arguments \cite{gennaro2010nivr,parno2013pinocchio,
+bensasson2013snarks}. These systems trade setup, proof, and cryptographic
+assumptions for generality. Komargodski and Weinstein study useful-work
+proofs for arbitrary matrix multiplication in a preprocessing and hardness
+framework \cite{kwesa}. Our guarantee is information-theoretic within the
+stated online bilinear class. Alman and FFLAS-FFPACK also show why finite-
+field bit complexity and arithmetic-gate counts must be reported separately
+\cite{alman_lookup,dumas2008fflas}. Verifiable query systems in data
+engineering provide a complementary systems perspective
+\cite{vgq}.
 
-\paragraph{Bilinear agreement}
-Tensor rank underlies exact bilinear computation\cite{algebraic,strassen}.
-Cohen and Moshkovitz relate analytic, geometric, and slice rank
-\cite{cohen2022structure}, and the geometric rank of rectangular
-multiplication is known\cite{kopparty2023geometric}. Using classical
-finite-field matrix-rank counts\cite{LaksovThorup1994}, our output-span
-argument conditions on the input rank before averaging the agreement
-bound. Section~\ref{ext:sec-profile} compares the resulting profile
-with the rank-based and range-size bounds. The six-product witness is
-related to defective products in probabilistic tensor algorithms
-\cite{KarppaKaski2019}; the seven-product threshold also follows from the
-support-rank result of Bl\"aser et al.\cite{BlaserChristandlZuiddam2017}.
+\paragraph{Coded and fast matrix computation}
+Polynomial and Lagrange coded computing use algebraic encodings to tolerate
+stragglers and, in some formulations, protect inputs or outputs
+\cite{yupolynomial2017,yulagrange2019}. Their decoding guarantees concern
+distributed availability and privacy, whereas our gate budget is charged on
+fresh factors and composed with output checks. Classical fast matrix
+algorithms and tensor-rank bounds remain relevant to the admitted bilinear
+class \cite{coppersmith1990matrix,algebraic,strassen}. Cohen and Moshkovitz
+relate agreement to slice, geometric, and analytic rank; geometric rank of
+rectangular multiplication is now explicit
+\cite{cohen2022structure,kopparty2023geometric}. Finite-field rank counts
+supply our profile weights \cite{LaksovThorup1994}; the six-product witness
+connects to defective tensor products and support rank
+\cite{KarppaKaski2019,BlaserChristandlZuiddam2017}.
 
 \paragraph{Allocation and application mechanisms}
-Our heterogeneous allocator specializes ordered-sum thresholds
-\cite{OgryczakTamir2003} and separable concave resource allocation
-\cite{FedergruenGroenevelt1986} to the acceptance certificate. The categorical
-application uses established symmetric and optimized unary encodings
-\cite{wang2017local}: their report distributions determine the conditional
-escape parameters, connecting encoding accuracy to work-target feasibility.
-Output integrity imposes a separate checking constraint. Exact word-size
-field arithmetic follows the implementation approach of FFLAS-FFPACK
-\cite{dumas2008fflas}.
+Our allocation results specialize ordered-sum threshold representations and
+separable concave allocation \cite{OgryczakTamir2003,FedergruenGroenevelt1986}.
+The application follows randomized-response and locally private frequency
+estimation mechanisms \cite{warner1965randomized,erlingsson2014rappor,
+dworkroth2014,wang2017local}. These mechanisms determine the conditional
+escape parameters and connect encoding accuracy to work-target feasibility;
+they do not replace the separate integrity constraint imposed by checking.

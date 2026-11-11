@@ -1,14 +1,17 @@
+% Condensed author version. Preserves all results, labels, and figure input.
+% Uses the existing theorem/lemma/corollary/proof environments.
+
 \subsection{A Work-Sensitive Finite-Field Bound}
 \label{ext:sec-profile}
 
-Use the interface of Section~\ref{sec:fresh-updates} with $n\ge r\ge2$,
-invertible $B$, and conditionally independent uniform
-$U,V\in\mathbb F_q^{n\times r}$.
+Retain $n\ge r\ge2$, invertible $B$, and conditionally independent uniform
+$U,V\in\mathbb F_q^{n\times r}$. Complete pre-input history fixes the
+program and gate allocation, including arbitrary paid state; the complete
+candidate precedes the checking vectors.
 
 \begin{lemma}[Output-span agreement]
 \label{ext:lem-output-span}
-For $0\le s\le r$, let $\rho_s$ be the probability that a uniform
-$n\times r$ matrix over $\F_q$ has rank $s$, and define
+For $0\le s\le r$, define
 \begin{equation}
 \rho_s=q^{-nr}\prod_{i=0}^{s-1}
        \frac{(q^n-q^i)(q^r-q^i)}{q^s-q^i},
@@ -49,13 +52,11 @@ Averaging proves the claim, including zero and rank-deficient inputs.
 At $w=0$, $F=0$, and conditional agreement has probability $q^{-ns}$.
 \end{proof}
 
-Write $\mu(w)=\mu_{n,r,q}(w)$ and $\vartheta=2/q-1/q^2$.
-
 \input{profile_comparison_short}
 
 Choose a certified integer lower bound $1\le R_0\le R=\mathcal R_q(n,r,n)$;
 Lemma~\ref{lem:fresh-tensor} permits $R_0=n^2$, without asserting equality
-to $R$. Define
+to $R$. Write $\mu(w)=\mu_{n,r,q}(w)$, $\vartheta=2/q-1/q^2$, and define
 \begin{equation}
 \overline p(w)=
 \begin{cases}
@@ -95,8 +96,6 @@ materialization, and checking retain their separate costs.
 
 \subsection{Adaptive Rounds Under a Pathwise Work Budget}
 \label{ext:sec-profile-dp}
-The recursion below is a backward dynamic program (DP) over the remaining
-work budget.
 
 \begin{theorem}[Aggregate work-profile bound]
 \label{ext:thm-profile-dp}
@@ -153,7 +152,7 @@ requires $w<nr$, or normalized work $w/R_0<r/n$.
 With acceptance coefficients precomputed and
 $M=|\mathcal A|\le\min(nr,R_0-1)+2$, value computation takes
 $O(k(\overline W+1)M)$ arithmetic operations/comparisons and
-$O(\overline W+1)$ auxiliary DP storage. Recovering an allocation stores
+$O(\overline W+1)$ auxiliary dynamic-programming (DP) storage. Recovering an allocation stores
 one maximizing action per state, requiring $O(k(\overline W+1))$
 additional entries. These are arithmetic/comparison-model counts.
 Replacing $\overline p(w)$ below $R_0$ by $\vartheta$ recovers the threshold
@@ -183,11 +182,15 @@ for positive $A,B$, concentrating work at the endpoints. At most one
 allocation exceeds four; comparing $(4,4),(5,3),(6,2),(7,1),(8,0)$
 with the other two allocations zero establishes the maximum.
 
+\input{figure_theory_bounds}
+Figure~\ref{fig:theory-bounds} compares these analytical bounds and the
+checking allocations below.
+
 \subsection{Single-Round Sharpness}
 \label{ext:sec-sharpness}
 
-Karppa and Kaski's six-product Strassen--Winograd variant omits one of the
-seven bilinear products~\cite[Sec.~1.1]{KarppaKaski2019}. A witness from Strassen's
+Karppa and Kaski's six-product Strassen--Winograd variant omits an output
+monomial~\cite[Sec.~1.1]{KarppaKaski2019}. A witness from Strassen's
 identity~\cite{strassen} attains our one-round bound.
 
 \begin{theorem}[Sharpness of the one-round threshold]
@@ -230,8 +233,8 @@ $q^{-t}$. The invertible input change preserves the six-gate representation;
 $\mathcal R_q(2,2,2)=7$ over every field~\cite{BlaserChristandlZuiddam2017}.
 \end{proof}
 
-The existing missing-term construction therefore establishes single-round
-sharpness.
+This existing missing-term technique proves single-round sharpness;
+each witness consumes six gates, with no aggregate tightness claim.
 
 \subsection{Selecting and Distributing Checking Work}
 \label{ext:sec-checking-design}
@@ -264,8 +267,9 @@ $q^{-t}\le(\delta^{1/d}-\vartheta)/(1-\vartheta)$ requires a positive
 right side for finite $t$. Taking logarithms gives both expressions.
 \end{proof}
 
-For $d=0$ the certificate is one. The floor $\vartheta^d$ concerns this threshold
-certificate; use~\eqref{ext:eq-profile-dp} for the stronger profile.
+For $d=0$ the certificate is one. Verify numerical ceilings in the original
+inequality. The floor $\vartheta^d$ concerns this threshold certificate;
+use~\eqref{ext:eq-profile-dp} for the stronger profile.
 
 \begin{theorem}[Balanced checking for identical rounds]
 \label{ext:thm-balanced}
@@ -405,13 +409,3 @@ For $0<\varepsilon<1$, choosing
 $L=\max\{1,\lceil\log_q(k/\varepsilon)\rceil\}$ ensures
 $I(\mathbf t)\le\varepsilon$; this common minimum is a sufficient
 condition for a general integrity budget.
-
-\input{figure_theory_bounds}
-Figure~\ref{fig:theory-bounds} compares the analytical bounds and the
-checking allocations: (a) $n=16$, $r=4$, $q=17$, with $40\le w\le64$ and
-the common cap $\vartheta$ since $w\le64<R_0=n^2$; (b) $n=8$, $r=2$,
-$q=17$, $k=4$, $t=2$, $R_0=64$; (c) $q=17$, $k=512$, $t_j\ge1$,
-$W\le128R_0$, alternating $\vartheta_j=15/16$ and $8/9$, with the exact
-allocation (OPT) and fixed-order round robin (RR). The dotted target is
-$(31/50)^{64}$. Panel~(a) is a single-round agreement bound; panels~(b)
-and~(c) are aggregate all-accept bounds under the work-budget hypothesis.

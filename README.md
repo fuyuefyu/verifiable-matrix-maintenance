@@ -6,6 +6,8 @@ for the paper **Verifiable Matrix Maintenance with Fresh Work Guarantees**.
 ## Contents
 
 - `main.pdf` and the LaTeX sources used to build the manuscript.
+- `supplement.pdf` and `supplement.tex` with the extended protocol, diagnostics,
+  and reproducibility details referenced by the paper.
 - `code/` with the analytical bound, planner, benchmark, connected-harness,
   and summarization programs.
 - `plans/` with the fixed experiment and connected-study configurations.

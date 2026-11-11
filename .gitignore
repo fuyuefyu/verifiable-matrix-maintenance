@@ -10,4 +10,5 @@ __pycache__/
 *.synctex.gz
 reruns/
 build/
+build_verify_*/
 dist/

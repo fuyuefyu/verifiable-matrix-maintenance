@@ -6,14 +6,19 @@ the bilinear program is selected before the new factors, and the complete
 candidate is fixed before the verifier's random vectors
 (Figure~\ref{fig:fresh-flow}).
 
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{figures/ICDE_figure_simplified.pdf}
+  \caption{Overview of the maintained analytical view, cached update, and
+  the two causal boundaries used by verification.}
+  \label{fig:fresh-flow}
+\end{figure}
 
 \subsection{Inputs, state, and computation}
-Fix a finite field $\F_q$ with $q$ elements, integers $n\ge r\ge2$, an
-initial $A_0\in\F_q^{n\times n}$, and $B\in\mathrm{GL}_n(\F_q)$, the
-group of invertible $n\times n$ matrices over $\F_q$.
-The authenticated initial product is $C_0=A_0B$. Write
-$\xleftarrow{\$}$ for an independent uniform draw. The intended
-trajectory of accepted updates then satisfies, in round $j$,
+Fix a finite field $\F_q$, integers $n\ge r\ge2$, an initial
+$A_0\in\F_q^{n\times n}$, and $B\in\mathrm{GL}_n(\F_q)$.
+The authenticated initial product is $C_0=A_0B$. The intended trajectory
+of accepted updates satisfies, in round $j$,
 \begin{equation}\label{eq:fresh-task}
 \begin{gathered}
 U_j,V_j\xleftarrow{\$}\F_q^{n\times r},\qquad
@@ -36,14 +41,13 @@ and timing of the computation that uses the new factors.
 
 \begin{definition}[Admitted online program]\label{def:fresh-program}
 Conditional on $\mathcal H_j^-$, the increment is one fixed homogeneous
-bilinear program: with scalar linear forms $L_{j,a},R_{j,a}$ in the
-entries of $U,V$, output coefficient matrices
-$Z_{j,a}\in\F_q^{n\times n}$, and gate count $w_j$,
+bilinear program
 \begin{equation}\label{eq:fresh-program}
-F_j(U,V)=\sum_{a=1}^{w_j}Z_{j,a}L_{j,a}(U)R_{j,a}(V).
+F_j(U,V)=\sum_{a=1}^{w_j}Z_{j,a}L_{j,a}(U)R_{j,a}(V),
+\quad Z_{j,a}\in\F_q^{n\times n}.
 \end{equation}
-The linear forms, output coefficients, topology, and gate count are fixed
-before the current factors arrive. A gate multiplies one linear
+The linear forms, output coefficients, topology, and gate count $w_j$
+are fixed before the current factors arrive. A gate multiplies one linear
 form in each fresh factor group. The count includes every supplier's
 bilinear gates contributing to the round; unused gates may have zero
 output coefficients.
@@ -65,8 +69,7 @@ The candidate is
 $\widetilde C_j=\widehat C_{j-1}+F_j(U_j,V_j)$.
 Its entire actual matrix is fixed before the verifier draws $t_j\ge1$
 independent uniform vectors $z_{j,h}\in\F_q^n$, conditional on the
-history, factors, and candidate, where $[m]=\{1,\ldots,m\}$ for positive
-integers $m$. The verifier tests
+history, factors, and candidate. The verifier tests
 \begin{equation}\label{eq:fresh-check}
 (\widetilde C_j-\widehat C_{j-1})z_{j,h}
 =U_j\bigl(V_j^\top(Bz_{j,h})\bigr),\quad h\in[t_j].
@@ -105,11 +108,9 @@ the resulting profiles across adaptive rounds.
 Theorems~\ref{ext:thm-balanced} and~\ref{ext:thm-heterogeneous} then allocate
 a fixed budget of checking vectors.
 
-Let $\mathcal R_q(n,r,n)$ be the tensor rank of the $\langle n,r,n\rangle$
-multiplication map $(U,Y)\mapsto UY$, with $U\in\F_q^{n\times r}$ and
-$Y\in\F_q^{r\times n}$: the least number of simple terms, each the product
-of one linear form in $U$, one linear form in $Y$, and a fixed output
-coefficient matrix. Define
+Let $\mathcal R_q(n,r,n)$ be the tensor rank of
+$(U,Y)\mapsto UY$, with $U\in\F_q^{n\times r}$ and
+$Y\in\F_q^{r\times n}$, and define
 \begin{equation}\label{eq:fresh-parameters}
 R=\mathcal R_q(n,r,n),\qquad
 \theta_q=2/q-1/q^2=1-(1-1/q)^2.
@@ -131,10 +132,8 @@ prepared, so the program tensor has rank at most $w_j$.
 
 For the explicit lower bound, output flattening sends a functional
 $\lambda$ to $(U,Y)\mapsto\lambda(UY)$. If this form vanishes,
-the choices $U=e_i e_1^\top$ and $Y=e_1 e_\ell^\top$, where $e_i$ is
-the $i$-th standard basis vector and $E_{i\ell}=e_ie_\ell^\top$ is the
-corresponding matrix unit, imply $\lambda(E_{i\ell})=0$ for every
-$i,\ell$. The flattening is thus
+the choices $U=e_i e_1^\top$, $Y=e_1 e_\ell^\top$ imply
+$\lambda(E_{i\ell})=0$ for every $i,\ell$. The flattening is thus
 injective on an $n^2$-dimensional space. A simple tensor has flattening
 rank at most one, proving $R\ge n^2$. These sparse inputs are algebraic
 witnesses at the same factor width $r$.
@@ -161,9 +160,9 @@ If the preceding reference is genuine, the increment-agreement event
 is exactly $\widetilde C_j=C_j$.
 \end{theorem}
 \begin{proof}
-A nonzero coordinate of $F_j-T_B$ is $p(u,v)=u^\top Mv$, where $u=\operatorname{vec}(U)$ and
-$v=\operatorname{vec}(V)$ stack the entries of $U$ and $V$ in a fixed
-order, and $\operatorname{rank}(M)=s\ge1$. Uniformity gives
+A nonzero coordinate of $F_j-T_B$ is $p(u,v)=u^\top Mv$, where
+$u=\operatorname{vec}(U)$, $v=\operatorname{vec}(V)$, and
+$\operatorname{rank}(M)=s\ge1$. Uniformity gives
 \begin{equation}\label{eq:fresh-nonzero}
 \Prb[p(u,v)\ne0\mid\mathcal H_j^-]
 =(1-q^{-s})(1-q^{-1})\ge(1-q^{-1})^2.
@@ -196,11 +195,9 @@ budget. It is one when $b=k$. The work-sensitive profile below retains
 the individual gate counts instead of only this expensive-round count.
 
 If $\operatorname{rank}(B)=s$, write
-$B=P\operatorname{diag}(I_s,0)Q$ with invertible $P,Q$, where $I_s$ is the
-$s\times s$ identity matrix. The input change $V'=P^\top V$ and output
-change $C\mapsto CQ^{-1}$ give
-$(U,V')\mapsto[U(V'_{1:s,:})^\top\;0]$, where $V'_{1:s,:}$ denotes the
-first $s$ rows of $V'$.
+$B=P\operatorname{diag}(I_s,0)Q$ with invertible $P,Q$. The input
+change $V'=P^\top V$ and output change $C\mapsto CQ^{-1}$ give
+$(U,V')\mapsto[U(V'_{1:s,:})^\top\;0]$.
 Restriction and projection recover $\langle n,r,s\rangle$, and
 embedding gives the reverse reduction. The fresh tensor rank is therefore
 $\mathcal R_q(n,r,s)\ge ns$, by the same output flattening. At

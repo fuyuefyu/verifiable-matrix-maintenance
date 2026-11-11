@@ -13,7 +13,13 @@
 \newtheorem{definition}{Definition}
 \newtheorem{corollary}{Corollary}
 \title{Verifiable Matrix Maintenance with Fresh Work Guarantees}
-\author{\IEEEauthorblockN{[AUTHOR NAMES TO BE PROVIDED]}\\\IEEEauthorblockA{[AFFILIATIONS, EMAILS, AND ORCIDs TO BE PROVIDED]}}
+\author{\IEEEauthorblockN{Chuanliu Liu, Zhirong Yue, Rong Du, Yue Fu, and Yongle Chen}\\
+\IEEEauthorblockA{Taiyuan University of Technology\\
+Chuanliu Liu: \texttt{liuchuanliu0360@link.tyut.edu.cn};\quad
+Zhirong Yue: \texttt{2024002578@link.tyut.edu.cn}\\
+Rong Du: \texttt{durong@tyut.edu.cn};\quad
+Yue Fu: \texttt{fuyue@tyut.edu.cn};\quad
+Yongle Chen: \texttt{chenyongle@tyut.edu.cn}}}
 \begin{document}
 \maketitle
 \input{framing}
@@ -23,33 +29,21 @@
 \input{evaluation}
 
 \section{Discussion and Conclusion}\label{sec:scope}\label{sec:conclusion}
-Retained matrix products and arbitrary paid history can coexist with
-acceptance bounds under a fresh-work budget. Conditioning on rank
-strengthens agreement at positive work budgets, and a resource recursion
-composes the per-round bounds under adaptive pathwise spending, including
-rounds that accept an already incorrect reference. Checking allocation
-then turns an acceptance target into a finite resource decision, kept
-separate from the integrity budget that governs output correctness. Exact-field
-measurements locate the scale at which arithmetic reuse outweighs
-candidate materialization, and fresh randomized attribute reports connect
-encoding, statistical accuracy, and verification cost. These guarantees
-hold for the stated causal ordering and bilinear program class. The
-prototype exercises that interface through trusted kernel admission;
-accounting for the same work under untrusted general-purpose execution
-would require a separate enforcement mechanism.
+Retained products and arbitrary paid history can coexist with a positive
+fresh-work guarantee. Rank conditioning and resource recursion give
+work-dependent acceptance bounds, while exact allocation converts a target
+into a finite checking decision. Exact-field measurements quantify reuse
+benefits, and randomized Covertype views instantiate the nonuniform case.
+The guarantees apply to the stated causal ordering and bilinear class;
+untrusted general-purpose execution still needs an enforcement mechanism.
 
 \FloatBarrier
 \balance
-\section*{Acknowledgment of AI-Generated Content}
-ChatGPT Pro (GPT-6 Astra Pro) assisted with mathematical formulation and
-proof development in Sections~III--IV, experiment and analysis code,
-experimental design and interpretation in Sections~V--VI, and literature
-search and prose revision throughout the paper. Local Codex
-(gpt-6.1-terra, high reasoning) performed mechanical implementation,
-remote experiment execution, and typesetting. DeepSeek-driven local Codex
-(DeepSeek-V4.1-Flash-1017, high reasoning) assisted with the present
-editorial revision. Human authors are
-responsible for the final submission.
+\section*{Acknowledgment of AI-Assisted Work}
+AI-assisted tools supported mathematical drafting, code and experiment
+organization, and language editing. The authors verified the technical
+content, results, and final presentation and take responsibility for the
+manuscript.
 \bibliographystyle{IEEEtran}
 \bibliography{references}
 \end{document}
