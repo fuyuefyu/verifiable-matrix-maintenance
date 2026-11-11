@@ -1,0 +1,55 @@
+\documentclass[conference]{IEEEtran}
+\usepackage{amsmath,amssymb,amsthm,booktabs,array,graphicx,cite,url,tikz,pgfplots}
+\usepackage{placeins,balance}
+\usetikzlibrary{arrows.meta,positioning,calc,fit,backgrounds}
+\usepgfplotslibrary{groupplots}
+\pgfplotsset{compat=1.18}
+\usepackage[hidelinks]{hyperref}
+\newcommand{\F}{\mathbb F}
+\newcommand{\Prb}{\mathbb P}
+\newcommand{\E}{\mathbb E}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{definition}{Definition}
+\newtheorem{corollary}{Corollary}
+\title{Verifiable Matrix Maintenance with Fresh Work Guarantees}
+\author{\IEEEauthorblockN{[AUTHOR NAMES TO BE PROVIDED]}\\\IEEEauthorblockA{[AFFILIATIONS, EMAILS, AND ORCIDs TO BE PROVIDED]}}
+\begin{document}
+\maketitle
+\input{framing}
+\input{fresh_updates_compact}
+\input{checking_extensions}
+\input{execution}
+\input{evaluation}
+
+\section{Discussion and Conclusion}\label{sec:scope}\label{sec:conclusion}
+Retained matrix products and arbitrary paid history can coexist with
+acceptance bounds under a fresh-work budget. Conditioning on rank
+strengthens agreement at positive work budgets, and a resource recursion
+composes the per-round bounds under adaptive pathwise spending, including
+rounds that accept an already incorrect reference. Checking allocation
+then turns an acceptance target into a finite resource decision, kept
+separate from the integrity budget that governs output correctness. Exact-field
+measurements locate the scale at which arithmetic reuse outweighs
+candidate materialization, and fresh randomized attribute reports connect
+encoding, statistical accuracy, and verification cost. These guarantees
+hold for the stated causal ordering and bilinear program class. The
+prototype exercises that interface through trusted kernel admission;
+accounting for the same work under untrusted general-purpose execution
+would require a separate enforcement mechanism.
+
+\FloatBarrier
+\balance
+\section*{Acknowledgment of AI-Generated Content}
+ChatGPT Pro (GPT-6 Astra Pro) assisted with mathematical formulation and
+proof development in Sections~III--IV, experiment and analysis code,
+experimental design and interpretation in Sections~V--VI, and literature
+search and prose revision throughout the paper. Local Codex
+(gpt-6.1-terra, high reasoning) performed mechanical implementation,
+remote experiment execution, and typesetting. DeepSeek-driven local Codex
+(DeepSeek-V4.1-Flash-1017, high reasoning) assisted with the present
+editorial revision. Human authors are
+responsible for the final submission.
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+\end{document}

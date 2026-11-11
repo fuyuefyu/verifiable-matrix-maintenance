@@ -1,0 +1,207 @@
+\section{Model and Stateful Protocol}\label{sec:fresh-updates}\label{sec:fresh-model}
+We study an application that maintains a matrix product as new low-rank
+updates arrive. The application retains its earlier result; the processor
+may retain arbitrary paid state. A round has two ordering requirements:
+the bilinear program is selected before the new factors, and the complete
+candidate is fixed before the verifier's random vectors
+(Figure~\ref{fig:fresh-flow}).
+
+
+\subsection{Inputs, state, and computation}
+Fix a finite field $\F_q$ with $q$ elements, integers $n\ge r\ge2$, an
+initial $A_0\in\F_q^{n\times n}$, and $B\in\mathrm{GL}_n(\F_q)$, the
+group of invertible $n\times n$ matrices over $\F_q$.
+The authenticated initial product is $C_0=A_0B$. Write
+$\xleftarrow{\$}$ for an independent uniform draw. The intended
+trajectory of accepted updates then satisfies, in round $j$,
+\begin{equation}\label{eq:fresh-task}
+\begin{gathered}
+U_j,V_j\xleftarrow{\$}\F_q^{n\times r},\qquad
+A_j=A_{j-1}+U_jV_j^\top,\\
+C_j=A_jB=C_{j-1}+U_j(V_j^\top B).
+\end{gathered}
+\end{equation}
+Uniformity includes rank-deficient factors. Let $\mathcal H_j^-$ be the
+complete classical history just before disclosure: earlier factors,
+outputs, checking vectors, all suppliers' state, the selected program,
+its gate allocation, and the coins used to select them. Conditional on
+every such history, $U_j$ and $V_j$ remain independent and uniform.
+Section~\ref{sec:escape} gives a conditional nonuniform extension.
+
+Preprocessing can depend arbitrarily on $A_0,B$, and earlier inputs. Its
+actual cost $P$ is charged, and finite aggregate state $S$ includes all
+advice, tables, circuits, and caches held by all suppliers. The theorem
+places no numerical bound on $P$ or $S$: it constrains the representation
+and timing of the computation that uses the new factors.
+
+\begin{definition}[Admitted online program]\label{def:fresh-program}
+Conditional on $\mathcal H_j^-$, the increment is one fixed homogeneous
+bilinear program: with scalar linear forms $L_{j,a},R_{j,a}$ in the
+entries of $U,V$, output coefficient matrices
+$Z_{j,a}\in\F_q^{n\times n}$, and gate count $w_j$,
+\begin{equation}\label{eq:fresh-program}
+F_j(U,V)=\sum_{a=1}^{w_j}Z_{j,a}L_{j,a}(U)R_{j,a}(V).
+\end{equation}
+The linear forms, output coefficients, topology, and gate count are fixed
+before the current factors arrive. A gate multiplies one linear
+form in each fresh factor group. The count includes every supplier's
+bilinear gates contributing to the round; unused gates may have zero
+output coefficients.
+\end{definition}
+
+The fixed transform $V^\top B$ is linear in fresh inputs. Its field
+operations, state access, additions, communication, and output
+materialization retain their actual execution costs, but are not the
+variable-by-variable gates counted by $w_j$. Exact fast bilinear
+algorithms are admitted. Input-indexed program selection, branching on
+current inputs, and nonlinear encodings of those inputs are distinct
+computational models~\cite{alman_lookup}. Paid state may select the next
+program before disclosure; an answer computed from the current input by
+another supplier must be charged as current computation.
+
+\subsection{Candidate and verification}
+The verifier stores a reference $\widehat C_{j-1}$, initially $C_0$.
+The candidate is
+$\widetilde C_j=\widehat C_{j-1}+F_j(U_j,V_j)$.
+Its entire actual matrix is fixed before the verifier draws $t_j\ge1$
+independent uniform vectors $z_{j,h}\in\F_q^n$, conditional on the
+history, factors, and candidate, where $[m]=\{1,\ldots,m\}$ for positive
+integers $m$. The verifier tests
+\begin{equation}\label{eq:fresh-check}
+(\widetilde C_j-\widehat C_{j-1})z_{j,h}
+=U_j\bigl(V_j^\top(Bz_{j,h})\bigr),\quad h\in[t_j].
+\end{equation}
+Acceptance commits $A_j$ and advances $\widehat C_j$ to the candidate.
+Rejection commits neither update and ends the prescribed sequence.
+Recovery starts a new sequence from an authenticated, consistent checkpoint,
+with its own work budget and acceptance event. Failed candidates and
+transcripts may remain in paid state; freshness in a restarted sequence
+is conditioned on this full history. The accepted reference alone serves
+as the previous-product reference. A fully received matrix
+satisfies the candidate boundary; a cryptographic representation must
+bind a complete matrix and account for its binding error.
+
+We consider $k$ prescribed attempts with a \emph{pathwise} budget
+$\sum_{j=1}^k w_j\le W$. Choices may adapt to the complete observed
+history. Aborting before round $k$ fails the all-execute-and-accept event;
+selecting successes from unbounded retries is a different event.
+
+A concrete matrix view accumulates cross-products of paired feature
+streams. A batch of $r$ paired $n$-dimensional records forms the columns
+of $U_j,V_j$; the view maintains
+$A_j=A_0+\sum_{i\le j}U_iV_i^\top$, and fixed $B$ transforms its right-hand
+features. The uniform model describes independently sampled finite-field
+records. Independent coordinates with bounded conditional maximum atoms
+give the nonuniform instance of Corollary~\ref{cor:coordinate-escape}.
+These are assumptions on the incoming records, rather than consequences
+of requesting the product. Section~\ref{sec:evaluation} also measures a
+structured row-replacement view through the same update interface.
+
+\section{Fresh Computation and Acceptance Bounds}\label{sec:fresh-theory}
+We first establish the tensor threshold and a history-conditioned
+single-round bound. Corollary~\ref{ext:cor-work-acceptance} refines this
+bound as a function of work, and Theorem~\ref{ext:thm-profile-dp} composes
+the resulting profiles across adaptive rounds.
+Theorems~\ref{ext:thm-balanced} and~\ref{ext:thm-heterogeneous} then allocate
+a fixed budget of checking vectors.
+
+Let $\mathcal R_q(n,r,n)$ be the tensor rank of the $\langle n,r,n\rangle$
+multiplication map $(U,Y)\mapsto UY$, with $U\in\F_q^{n\times r}$ and
+$Y\in\F_q^{r\times n}$: the least number of simple terms, each the product
+of one linear form in $U$, one linear form in $Y$, and a fixed output
+coefficient matrix. Define
+\begin{equation}\label{eq:fresh-parameters}
+R=\mathcal R_q(n,r,n),\qquad
+\theta_q=2/q-1/q^2=1-(1-1/q)^2.
+\end{equation}
+
+\begin{lemma}[Fresh-input tensor]\label{lem:fresh-tensor}
+The map $T_B(U,V)=U(V^\top B)$ is linearly isomorphic to the
+$\langle n,r,n\rangle$ multiplication tensor. Its tensor rank is
+$R\ge n^2$. For any fixed pre-input state, an admitted program exact on
+all inputs uses at least $R$ bilinear gates.
+\end{lemma}
+\begin{proof}
+The input change $\Phi_B(V)=V^\top B$ is invertible, with inverse
+$\Phi_B^{-1}(Y)=(YB^{-1})^\top$. Tensor rank is invariant under this
+change, while each summand of~\eqref{eq:fresh-program} is a simple
+input--input--output tensor. Conditioning on $\mathcal H_j^-$ makes
+all coefficients constants relative to the new inputs, however they were
+prepared, so the program tensor has rank at most $w_j$.
+
+For the explicit lower bound, output flattening sends a functional
+$\lambda$ to $(U,Y)\mapsto\lambda(UY)$. If this form vanishes,
+the choices $U=e_i e_1^\top$ and $Y=e_1 e_\ell^\top$, where $e_i$ is
+the $i$-th standard basis vector and $E_{i\ell}=e_ie_\ell^\top$ is the
+corresponding matrix unit, imply $\lambda(E_{i\ell})=0$ for every
+$i,\ell$. The flattening is thus
+injective on an $n^2$-dimensional space. A simple tensor has flattening
+rank at most one, proving $R\ge n^2$. These sparse inputs are algebraic
+witnesses at the same factor width $r$.
+
+Over a finite field, equality of bilinear functions determines their
+tensors: evaluation on pairs of input basis vectors recovers every
+coefficient. Hence $w_j<R$ implies $F_j-T_B$ is a nonzero bilinear
+map as a tensor and as a function.
+\end{proof}
+
+Fast rectangular algorithms can reduce the direct $n^2r$ gate count,
+while every exact admitted program still needs at least $R\ge n^2$
+gates. This argument counts computation, separately from writing the
+$n^2$ output entries.
+
+\begin{theorem}[One-round exactness and acceptance]\label{thm:fresh-one}
+Fix a history $\mathcal H_j^-$ and a program with $w_j<R$. Its
+increment agrees with $T_B$ with probability at most $\theta_q$.
+With $t$ checking vectors its acceptance probability is at most
+\begin{equation}\label{eq:fresh-w2}
+a(t)=\theta_q+(1-\theta_q)q^{-t}.
+\end{equation}
+If the preceding reference is genuine, the increment-agreement event
+is exactly $\widetilde C_j=C_j$.
+\end{theorem}
+\begin{proof}
+A nonzero coordinate of $F_j-T_B$ is $p(u,v)=u^\top Mv$, where $u=\operatorname{vec}(U)$ and
+$v=\operatorname{vec}(V)$ stack the entries of $U$ and $V$ in a fixed
+order, and $\operatorname{rank}(M)=s\ge1$. Uniformity gives
+\begin{equation}\label{eq:fresh-nonzero}
+\Prb[p(u,v)\ne0\mid\mathcal H_j^-]
+=(1-q^{-s})(1-q^{-1})\ge(1-q^{-1})^2.
+\end{equation}
+Indeed, $M^\top u\ne0$ with probability $1-q^{-s}$; conditional
+on such a $u$, its inner product with independent uniform $v$ is
+uniform in $\F_q$. Full increment agreement implies $p=0$.
+
+Write $D=F_j(U_j,V_j)-T_B(U_j,V_j)$. The candidate and the checker
+use the same previous reference, so~\eqref{eq:fresh-check} tests $Dz=0$
+even if that reference is wrong. After candidate fixation, nonzero $D$
+passes $t$ independent vectors with probability
+$q^{-t\operatorname{rank}(D)}\le q^{-t}$~\cite{freivalds}.
+For increment-agreement probability $p_j\le\theta_q$, total
+acceptance is at most $p_j+(1-p_j)q^{-t}\le a(t)$.
+\end{proof}
+
+\input{fresh_update_distribution_extension}
+\input{fresh_stateful_heterogeneous}
+
+\subsection{Uniform factors and singular fixed operands}
+For uniform factors and $t_j=t$, put
+$b=\min\{k,\lfloor W/R\rfloor\}$. Theorem~\ref{thm:fresh-stateful} gives
+\begin{equation}\label{eq:fresh-w3-uniform}
+\Prb[\text{all $k$ attempts execute and accept}]
+\le a(t)^{k-b}.
+\end{equation}
+This holds for adaptive programs and allocations under the pathwise
+budget. It is one when $b=k$. The work-sensitive profile below retains
+the individual gate counts instead of only this expensive-round count.
+
+If $\operatorname{rank}(B)=s$, write
+$B=P\operatorname{diag}(I_s,0)Q$ with invertible $P,Q$, where $I_s$ is the
+$s\times s$ identity matrix. The input change $V'=P^\top V$ and output
+change $C\mapsto CQ^{-1}$ give
+$(U,V')\mapsto[U(V'_{1:s,:})^\top\;0]$, where $V'_{1:s,:}$ denotes the
+first $s$ rows of $V'$.
+Restriction and projection recover $\langle n,r,s\rangle$, and
+embedding gives the reverse reduction. The fresh tensor rank is therefore
+$\mathcal R_q(n,r,s)\ge ns$, by the same output flattening. At
+$B=0$ the increment is zero. The main workload uses invertible $B$.

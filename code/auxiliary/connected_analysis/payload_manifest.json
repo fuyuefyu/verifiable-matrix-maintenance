@@ -1,0 +1,9 @@
+{
+  "sha256": {
+    "connected_results_analysis.py": "7c096f897caf5640c2623fc0de7455f5d923a08582fe386a228e7b704b9e1abf",
+    "figures_v4.json": "e6e7d5bda73d9a2893de5dd28bb6d84a0eff48edbbe468e515bafa5449eab2d5",
+    "plot_results_v3_to_v4.patch": "26099c70317111e58e898ca30ac91b80dc0c1d0dac25d85cf5cd4c22a7553eae"
+  },
+  "renderer_base_sha256": "8eca136dd21e8aa84c1837f37c7559098de11881f4778d78daadc7f090d6eb8f",
+  "renderer_v4_sha256": "55f8d2dccbd335c4a8dc2835f0befdf074b942e784b4a261e10ffbe31c19e913"
+}

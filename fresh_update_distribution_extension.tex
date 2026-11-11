@@ -1,0 +1,53 @@
+\subsection{History-conditioned nonuniform factors}\label{sec:escape}
+Let $u_j=\operatorname{vec}(U_j)$ and $v_j=\operatorname{vec}(V_j)$.
+For each round, suppose predetermined parameters
+$\lambda_{U,j},\lambda_{V,j}\in[0,1]$ satisfy, on every reachable pre-input history $h$,
+\begin{align*}
+\Prb[a^\top u_j\ne0\mid h]&\ge\lambda_{U,j},\quad a\ne0,\\
+\Prb[d^\top v_j\ne0\mid U_j=u,h]&\ge\lambda_{V,j},\quad d\ne0,
+\end{align*}
+for every supported $u$. These are uniform lower bounds across histories
+and nonzero linear forms. The conditioning of the second bound on $U_j$
+allows dependencies between the factors without treating them as
+independent. The invertible change $V\mapsto V^\top B$ preserves
+the lower bound for nonzero linear forms.
+
+\begin{lemma}[Conditional bilinear escape]\label{lem:conditional-escape}
+Every nonzero bilinear form $u_j^\top Mv_j$ is nonzero with
+conditional probability at least $\lambda_{U,j}\lambda_{V,j}$.
+\end{lemma}
+\begin{proof}
+Choose a nonzero column $a$ of $M$. The event $a^\top u_j\ne0$
+has probability at least $\lambda_{U,j}$ and implies $M^\top u_j\ne0$.
+For every such realized $u_j$, the second bound applies to the linear
+form with coefficient $M^\top u_j$, giving conditional probability at
+least $\lambda_{V,j}$. Averaging over these $u_j$ proves the claim.
+\end{proof}
+
+\begin{corollary}[Independent-coordinate escape]\label{cor:coordinate-escape}
+Let $\alpha_j,\beta_j\in[0,1]$. Suppose coordinates of $U_j$ are conditionally independent given $h$,
+with maximum atom at most $\alpha_j$, and coordinates of $V_j$ are
+conditionally independent given $(U_j,h)$, with maximum atom at most
+$\beta_j$. The escape conditions hold with
+$\lambda_{U,j}=1-\alpha_j$ and $\lambda_{V,j}=1-\beta_j$.
+For a fixed discrepancy form whose
+coefficient matrix has rank $s$, its nonzero probability is at least
+$(1-\alpha_j^s)(1-\beta_j)$.
+\end{corollary}
+\begin{proof}
+In a nonzero linear form, condition on all but one coordinate with a
+nonzero coefficient. At most one value of that coordinate makes the
+form zero, with conditional probability at most its maximum atom.
+For the rank-sensitive statement, select $s$ pivot coordinates in the
+rank-$s$ system $M^\top u_j=0$. Conditional on the remaining
+coordinates, the pivot values are uniquely determined. Their conditional
+independence bounds this event by $\alpha_j^s$. On its complement,
+apply the single-form bound $1-\beta_j$ conditional on $U_j$.
+\end{proof}
+
+Uniform coordinates give escape $1-1/q$; independent Bernoulli($p$)
+coordinates give at least $\min\{p,1-p\}$. Conversely, a factor
+supported on a linear hyperplane can have zero escape. Structured data
+streams must establish the stated conditional parameters before these
+probability guarantees apply; measuring an update operator's runtime does
+not supply those distributional parameters.

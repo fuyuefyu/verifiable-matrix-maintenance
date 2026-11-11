@@ -1,0 +1,92 @@
+{
+  "schema": "icde04-portable-reproduction-v1",
+  "frozen_deadline_utc": "2026-11-10T13:32:14Z",
+  "frozen_planner_hard_stop": 1794317534,
+  "maximum_allocation_seconds": 43200,
+  "connected_batch_seconds": 1800,
+  "notes": [
+    "Paths below are relative to the released artifact root, not to the historical machines.",
+    "Source hashes identify frozen code. Changing a hash or scientific argument defines a new configuration and must be disclosed.",
+    "No source, data, environment, compiler, SSH transport or credentials are downloaded or installed.",
+    "A connected setup and all dependent workers share its original batch start and effective deadline. Transport between hosts is manual and preserves the complete setup directory.",
+    "Main and extension host plans run locally on the selected host. Use the same --batch-start-utc and --deadline-utc for one multi-host allocation.",
+    "Dry runs write only the derived configuration and command manifest. They do not validate scientific correctness or execution completion."
+  ],
+  "sources": {
+    "runner": {"path": "code/run_grid.py", "sha256": "d80670a9fe71d9708535d60db6f3380e658c0e40daf12dbe686ef4809da346ce"},
+    "planner": {"path": "code/connected_planner_fast.py", "sha256": "b1b54a60217c74b0a02d9408b428dca1245e06079485bcbf4876a71303131207"},
+    "connected": {"path": "code/connected_service_harness.py", "sha256": "12d89f818443d11a319be5e636669b87361db6cf1bd0c3efae375ad491dccf17"},
+    "exact_field": {"path": "code/exact_field_bench.py", "sha256": "29b38abffb217b9809f34142548c638957f7e892185d49340841916ee1ab1ba1"},
+    "covertype": {"path": "code/covertype_bench.py", "sha256": "a680bad668a96d116d747180bb040eb1de6b2f10dc7ec4e631e940ca4485d295"},
+    "q61_cpp": {"path": "code/q61_bench.cpp", "sha256": "b0faac901121a9a195ce0f56f7d78c83396a29738c3e2aa24af347f164ba6fd2"},
+    "profile_bound": {"path": "code/profile_bound.py", "sha256": "e6d2928cf76611cbdbf2731d191d220fa83ff761295668c83db50808f0d533c8"},
+    "summarizer": {"path": "code/summarize_bench.py", "sha256": "f65be1b72a34a2b5ddf8371cd0f8488cf76903687bef21727d7be9461d1cd863"}
+  },
+  "data": {
+    "source_zip": {"path": "data/covertype.zip", "sha256": "89a975c2457cd48e824238ae43c5a3cb762e42c4b4078d9b44a4514055105f6d"},
+    "stream_manifest": {"path": "data/historical/stream_manifest.json", "sha256": "0ba16b2b8fd929eb25d51fee7c249de3760144d0f7cc9f27ab08ebf9c53783c2"}
+  },
+  "archived_plans": {
+    "main-fy": {"path": "plans/grid_plans/fy.json", "sha256": "ed8d6ec4622df8905150e67ffc3e6f6162c0cff54e0ea071c257827e51053b50", "wall_cap_seconds": 5400},
+    "main-fuyuespark": {"path": "plans/grid_plans/fuyuespark.json", "sha256": "5e7c95c872e85c613ca9bbd97a03aac65ccc82819ce90e7c489b1ed28b7e74c5", "wall_cap_seconds": 5400},
+    "main-dgx-theta": {"path": "plans/grid_plans/dgx-theta.json", "sha256": "e1836eb46d3f0b1b649deb6e0bca95611de6781aa074e36b2491e05c8df822f7", "wall_cap_seconds": 5400},
+    "main-dgx-spark-ebaf": {"path": "plans/grid_plans/dgx-spark-ebaf.json", "sha256": "041587290d147132048dfe3721940edf0921a2e1f35ecae85151331bdd5b9b8e", "wall_cap_seconds": 5400},
+    "main-fuyue_spark2": {"path": "plans/grid_plans/fuyue_spark2.json", "sha256": "62c5b76fe4028c2becabee5e8dbaf177a2e98a10cb8fdcec7e80887598e9187c", "wall_cap_seconds": 5400},
+    "stream-fy": {"path": "plans/stream_plans/fy.json", "sha256": "8fbe232e5813813f88c326807614eed8a9bc5e4c5b3858694f0aac7e99faba9a", "wall_cap_seconds": 2500},
+    "stream-dgx-spark-ebaf": {"path": "plans/stream_plans/dgx-spark-ebaf.json", "sha256": "f674387bce26741e5273b213b4bbcf5b7ae095ca0b1a46efb06768a4caf68f8e", "wall_cap_seconds": 2500}
+  },
+  "profiles": {
+    "planner": {
+      "wall_cap_seconds": 900,
+      "jobs": [{"id": "planner", "source": "planner", "timeout_seconds": 920, "args": ["--out", "{out}/planner", "--max-seconds", "900"]}]
+    },
+    "uniform-bounds": {
+      "wall_cap_seconds": 1200,
+      "jobs": [{"id": "uniform_bounds", "source": "profile_bound", "timeout_seconds": 1220, "args": ["--out", "{out}/bounds", "--max-seconds", "1200"]}]
+    },
+    "connected-setup": {
+      "connected": true,
+      "wall_cap_seconds": 1800,
+      "setup": true,
+      "jobs": [
+        {"id": "planner", "source": "planner", "timeout_seconds": 920, "args": ["--out", "{out}/planner", "--max-seconds", "900"]},
+        {"id": "prepare", "source": "connected", "timeout_seconds": 140, "data": ["source_zip"], "args": ["--mode", "prepare", "--source", "{source_zip}", "--out", "{out}/prepared", "--max-seconds", "120"]},
+        {"id": "validate_cpu", "source": "connected", "timeout_seconds": 140, "args": ["--mode", "validate", "--plans", "{out}/planner/plans.json", "--backend", "cpu", "--out", "{out}/validate_cpu", "--max-seconds", "120"]},
+        {"id": "acquire", "source": "connected", "timeout_seconds": 200, "args": ["--mode", "acquire", "--client-only", "--plans", "{out}/planner/plans.json", "--categories", "{out}/prepared/categories.npz", "--backend", "cpu", "--out", "{out}/tapes", "--max-seconds", "180"]}
+      ]
+    },
+    "connected-cpu": {
+      "connected": true,
+      "requires_setup": true,
+      "wall_cap_seconds": 1800,
+      "jobs": [
+        {"id": "validate_cpu", "source": "connected", "timeout_seconds": 140, "args": ["--mode", "validate", "--plans", "{inputs}/planner/plans.json", "--backend", "cpu", "--out", "{out}/validate_cpu", "--max-seconds", "120"]},
+        {"id": "replay", "source": "connected", "timeout_seconds": 500, "args": ["--mode", "timing", "--plan-names", "sue_opt17,sue_rr17", "--plans", "{inputs}/planner/plans.json", "--tapes", "{inputs}/tapes/tapes_manifest.json", "--backend", "cpu", "--out", "{out}/replay", "--max-seconds", "480"]},
+        {"id": "live", "source": "connected", "timeout_seconds": 500, "args": ["--mode", "live_integrity", "--plans", "{inputs}/planner/plans.json", "--categories", "{inputs}/prepared/categories.npz", "--backend", "cpu", "--out", "{out}/live", "--max-seconds", "480"]},
+        {"id": "replay_summary", "source": "connected", "timeout_seconds": 140, "args": ["--mode", "summarize", "--timing-dir", "{out}/replay", "--out", "{out}/replay_summary", "--max-seconds", "120"]},
+        {"id": "live_summary", "source": "connected", "timeout_seconds": 140, "args": ["--mode", "summarize", "--timing-dir", "{out}/live", "--out", "{out}/live_summary", "--max-seconds", "120"]}
+      ]
+    },
+    "connected-gpu": {
+      "connected": true,
+      "requires_setup": true,
+      "wall_cap_seconds": 1800,
+      "jobs": [
+        {"id": "validate_gpu", "source": "connected", "timeout_seconds": 140, "args": ["--mode", "validate", "--plans", "{inputs}/planner/plans.json", "--backend", "gpu", "--device", "{device}", "--out", "{out}/validate_gpu", "--max-seconds", "120"]},
+        {"id": "replay", "source": "connected", "timeout_seconds": 500, "args": ["--mode", "timing", "--plan-names", "sue_opt17,sue_rr17", "--plans", "{inputs}/planner/plans.json", "--tapes", "{inputs}/tapes/tapes_manifest.json", "--backend", "gpu", "--device", "{device}", "--out", "{out}/replay", "--max-seconds", "480"]},
+        {"id": "live", "source": "connected", "timeout_seconds": 500, "args": ["--mode", "live_integrity", "--plans", "{inputs}/planner/plans.json", "--categories", "{inputs}/prepared/categories.npz", "--backend", "gpu", "--device", "{device}", "--out", "{out}/live", "--max-seconds", "480"]},
+        {"id": "replay_summary", "source": "connected", "timeout_seconds": 140, "args": ["--mode", "summarize", "--timing-dir", "{out}/replay", "--out", "{out}/replay_summary", "--max-seconds", "120"]},
+        {"id": "live_summary", "source": "connected", "timeout_seconds": 140, "args": ["--mode", "summarize", "--timing-dir", "{out}/live", "--out", "{out}/live_summary", "--max-seconds", "120"]}
+      ]
+    },
+    "utility-00-04": {"connected": true, "requires_setup": true, "wall_cap_seconds": 1800, "jobs": [{"id": "utility", "source": "connected", "timeout_seconds": 920, "args": ["--mode", "utility", "--plans", "{inputs}/planner/plans.json", "--categories", "{inputs}/prepared/categories.npz", "--replicate-ids", "0,1,2,3,4", "--out", "{out}/utility", "--max-seconds", "900"]}]},
+    "utility-05-09": {"connected": true, "requires_setup": true, "wall_cap_seconds": 1800, "jobs": [{"id": "utility", "source": "connected", "timeout_seconds": 920, "args": ["--mode", "utility", "--plans", "{inputs}/planner/plans.json", "--categories", "{inputs}/prepared/categories.npz", "--replicate-ids", "5,6,7,8,9", "--out", "{out}/utility", "--max-seconds", "900"]}]},
+    "utility-10-14": {"connected": true, "requires_setup": true, "wall_cap_seconds": 1800, "jobs": [{"id": "utility", "source": "connected", "timeout_seconds": 920, "args": ["--mode", "utility", "--plans", "{inputs}/planner/plans.json", "--categories", "{inputs}/prepared/categories.npz", "--replicate-ids", "10,11,12,13,14", "--out", "{out}/utility", "--max-seconds", "900"]}]},
+    "utility-15-19": {"connected": true, "requires_setup": true, "wall_cap_seconds": 1800, "jobs": [{"id": "utility", "source": "connected", "timeout_seconds": 920, "args": ["--mode", "utility", "--plans", "{inputs}/planner/plans.json", "--categories", "{inputs}/prepared/categories.npz", "--replicate-ids", "15,16,17,18,19", "--out", "{out}/utility", "--max-seconds", "900"]}]},
+    "summarize-grid": {
+      "requires_raw_input": true,
+      "wall_cap_seconds": 1200,
+      "jobs": [{"id": "summarize", "source": "summarizer", "timeout_seconds": 1220, "args": ["--raw-root", "{raw_input}", "--out", "{out}/summary", "--require-complete"]}]
+    }
+  }
+}

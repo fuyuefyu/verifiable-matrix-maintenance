@@ -1,0 +1,74 @@
+\subsection{Randomized categorical views}
+\label{sec:randomized_categorical_application}
+We maintain a cross-product of reusable attribute reports for Covertype's
+40 soil categories and 100-meter elevation bins in $[0,4000)$ ($n=40$).
+Each arriving record supplies one paired report; the aggregate is retained
+across rounds.
+Symmetric unary encoding (SUE) reports a true bit with probability
+$p_j=1-\eta_j$ and a false bit with probability
+$\beta_j=\eta_j\in\{1/4,1/3\}$.
+For a fresh-work instance, all report coins are independent and sampled
+after program fixation. Conditioning on arbitrary source records and
+history leaves coordinate atoms at most $1-\eta_j$, hence
+$\lambda_U=\lambda_V=\eta_j$. Each attribute has privacy budget
+$\varepsilon_j=2\log((1-\eta_j)/\eta_j)$; a paired report has
+$2\varepsilon_j$. Privacy-matched optimized unary encoding (OUE) uses
+$p_j=1/2$ and $\beta_j\in\{1/10,1/5\}$~\cite{wang2017local},
+giving escape $\lambda_U=\lambda_V=\beta_j$.
+
+For a prime $q>2$, set $r=2$, $B=I$, and retain one modular state $C$, where $I$ is the
+identity matrix, $\mathbf1_r$ and $\mathbf1$ are all-ones vectors of length
+$r$ and of the ambient dimension, and $\operatorname{lift}_q$ maps a field
+element to its least nonnegative integer representative. The verifier
+computes $m_U=U_j\mathbf1_r$ and $m_V=V_j\mathbf1_r$ from received
+reports. Correct increments lie in $[0,2]$, so their unique lift,
+the decoding increment
+$\Gamma_j=\operatorname{lift}_q(\widetilde C_j-\widehat C_{j-1})$,
+recovers $U_jV_j^\top$ despite cumulative wrap. An increment entry outside
+$\{0,1,2\}$ causes rejection without state advance. On acceptance, advance
+$C$ and accumulate outside the field:
+\[
+ \widehat H=\sum_j
+ \frac{\Gamma_j-\beta_jm_U\mathbf1^\top-\beta_j\mathbf1m_V^\top
+                   +r\beta_j^2\mathbf1\mathbf1^\top}{(p_j-\beta_j)^2}.
+\]
+Correct maintenance gives an unbiased estimator $\widehat H$ of the joint
+category counts by independence of the two report noises. The uniform-factor work profile is unnecessary
+for this nonuniform application.
+
+Alternate the two parameter types over 512 rounds. Under the global
+budget $W\le128n^2$, $R\ge n^2$ permits the conservative allowance
+$b=128$ in Theorem~\ref{thm:fresh-stateful}, using the largest
+384 acceptance coefficients. Sorting all 512 rounds gives the global
+work-certificate floors
+\[
+ f_{\rm SUE}=(625/1024)^{64},\qquad
+ f_{\rm OUE}=\bigl((99/100)^4(24/25)^2\bigr)^{64}.
+\]
+SUE can certify the target $(31/50)^{64}$; OUE cannot reach it through
+this threshold certificate.
+
+For the two alternating types, the exact allocator admits a faster
+specialization of~\eqref{ext:eq-hetero-objective}. Let $m=256$, $b=128$,
+integer $T\ge2m$, $S=T-2m$, and give $S_A$ extra checks to
+the $\eta=1/4$ type and $S-S_A$ to the $\eta=1/3$ type.
+Convexity and permutation symmetry within each type, as in
+Theorem~\ref{ext:thm-balanced}, ensure a within-type balanced optimum.
+Because $15/16>8/9+(1/9)q^{-1}$ for $q\ge17$, the objective always
+retains all $m$ first-type coefficients and the largest $m-b$ second-type
+coefficients. Its logarithm is affine between the integer breakpoints
+\[
+ \{0,S\}\cup\bigl(\{hm,\ S-hm,\ S-hm-b:h\in\mathbb Z_{\ge0}\}\cap[0,S]\bigr).
+\]
+At a multiple of $m$ a balanced level changes; the shifted breakpoints
+occur when the $b$ excluded second-type entries cross a level.
+Evaluating these endpoints with exact rational products therefore finds
+the global optimum at fixed $T$. Monotonicity in $T$ then permits a
+search for the smallest total meeting the target, verified against the
+optimum at the preceding integer total.
+
+Section~\ref{sec:connected-results} combines the work and integrity
+requirements at $q=65521$; the $q=17$ configuration isolates work-target
+allocation. Estimation error remains a separate statistical quantity. The implemented fixed bilinear evaluator uses trusted
+kernel admission and input disclosure; its gate count is a logical
+resource measure, not hostile-host attestation.

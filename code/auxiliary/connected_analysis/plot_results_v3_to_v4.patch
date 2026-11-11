@@ -1,0 +1,198 @@
+--- plot_results_v3.py
++++ plot_results_v4.py
+@@ -1,9 +1,15 @@
+ #!/usr/bin/env python3
+-"""Remote rendering specification; do not run experiments or re-bootstrap here.
++"""Version-4 remote renderer: existing summaries and analytical CSVs only.
+ 
+ Run on the remote analysis host, next to outputs of summarize_bench.py:
+-  python plot_results.py --summary ANALYSIS/summary.json --spec figures.json \
+-      --theory-dir experiments/theory/profile_20261110 --out figures
++  python plot_results_v4.py --summary MAIN/summary.json \
++      --summary STREAM/summary.json --spec figures_v4.json \
++      --theory-dir LEGACY_THEORY --connected-theory-dir PLANNER_OUTPUT \
++      --out NEW_FIGURE_DIRECTORY
++
++The v4 spec contains three main-text figures. Older portability, small-view,
++and diagnostic figures remain in the unmodified v3 artifacts. Neither these
++summary statistics nor any analytical certificate is recomputed by plotting.
+ 
+ Repeat --summary for separate analysis directories. Each must contain its own
+ verification.json; run_manifest.json is included in the missing-run report when
+@@ -44,6 +50,10 @@
+   work_profile / aggregate_profile / checking_budget: the supplied CSV schemas.
+   csv: explicit file, x, series=[{y,label,color,log10?}], where, and data_role.
+        Explicit measure='log10_probability' uses a linear y axis, never log-log.
++       csv_root='legacy' (default) resolves below --theory-dir; 'connected'
++       resolves below --connected-theory-dir. There is no fallback across roots.
++  legends: figure legend='panel' gives independent legends; panel legend='none'
++       suppresses that panel's legend entries even in a shared figure legend.
+ 
+ Selection dictionaries use exact dotted JSON paths. A value may be a scalar or
+ {"in":[...]}; where extends a named selector. CSV where uses actual CSV headers.
+@@ -53,7 +63,8 @@
+ Known analytical underflow can be shown ONLY with an explicit censor_floor and
+ log10 column, using open downward markers and broken lines on a real log axis.
+ 
+-Only the existing seed-bootstrap intervals are plotted. Figure-level manifests
++Only the existing nominal 95% seed-bootstrap intervals are plotted; no exact
++coverage claim is made. Figure-level manifests
+ record source hashes, selected cells, timing modes, and statistical limitations.
+ Actual rendering and all numerical work belong on the authorized remote host.
+ """
+@@ -79,11 +90,11 @@
+ PALETTE = {"complete": "#3366A5", "incremental": "#D55E00",
+            "no_check": "#777777", "cached": "#8B5FBF"}
+ METHODS = {
+-    "recompute_check": ("Recompute + check", "complete", "o", "-"),
++    "recompute_check": ("Full + check", "complete", "o", "-"),
+     "incremental_check": ("Incremental + check", "incremental", "s", "-"),
+     "incremental_no_check": ("Incremental, no check", "no_check", "^", "--"),
+-    "cached_factorized_check": ("Cached factorized + check", "cached", "D", "-"),
+-    "cached_factorized_no_check": ("Cached factorized, no check", "no_check", "v", ":"),
++    "cached_factorized_check": ("Cached + check", "cached", "D", "-"),
++    "cached_factorized_no_check": ("Cached, no check", "no_check", "v", ":"),
+ }
+ RATIOS = {
+     "incremental_verification_factor": {
+@@ -297,7 +308,7 @@
+         ax.axhline(1, color="#333333", linestyle=":", linewidth=0.8, zorder=0)
+     ax.set_xticks(x)
+     return {"runs": [provenance(r) for r in chosen],
+-            "statistics": "Existing 95% seed-bootstrap intervals; no resampling in plotting",
++            "statistics": "Existing nominal 95% seed-bootstrap intervals; no resampling in plotting",
+             "paired": group == "paired_speedup"}
+ 
+ 
+@@ -329,7 +340,7 @@
+         ax.fill_between(expected_rounds, low, high, color=color, alpha=0.13, linewidth=0)
+     ax.set_xlim(0, expected_rounds[-1])
+     return {"runs": [provenance(run)], "includes_initialization_at_round_zero": True,
+-            "statistics": "Existing pointwise 95% seed-bootstrap bands; common resamples across points; not simultaneous bands"}
++            "statistics": "Existing pointwise nominal 95% seed-bootstrap bands; common resamples across points; not simultaneous bands"}
+ 
+ 
+ def categorical_runs(panel, spec, runs):
+@@ -376,7 +387,7 @@
+     if panel["kind"] == "speedup_bars":
+         ax.axhline(1, color="#333333", linestyle=":", linewidth=0.8, zorder=0)
+     note = ("Observed maximum GPU live allocation, including benchmark reset snapshots; not RSS, reserved pool, or a seed CI."
+-            if memory else "Existing 95% seed-bootstrap intervals; device-local matched methods; no cross-device pooling")
++            if memory else "Existing nominal 95% seed-bootstrap intervals; device-local matched methods; no cross-device pooling")
+     return {"runs": [provenance(r) for r in chosen], "statistics": note,
+             "memory_metric": "maximum_observed_gpu_live_array_peak_bytes" if memory else None}
+ 
+@@ -428,7 +439,7 @@
+     return {"runs": [provenance(r) for r in chosen], "ratio_key": key,
+             "numerator": definition["numerator"], "denominator": definition["denominator"],
+             "unit": "paired time ratio", "paired": True,
+-            "statistics": "Existing within-seed ratios and 95% seed-bootstrap intervals from paired_ratios; no ratio calculation or resampling in plotting"}
++            "statistics": "Existing within-seed ratios and nominal 95% seed-bootstrap intervals from paired_ratios; no ratio calculation or resampling in plotting"}
+ 
+ 
+ def empirical_phases(ax, panel, spec, runs):
+@@ -452,7 +463,7 @@
+         raise MissingData("Phase categories cannot use a numeric log axis")
+     names = panel.get("phase_labels", {})
+     ax.set_xticks(xs, [names.get(p, p) for p in phases], rotation=panel.get("label_rotation", 20))
+-    return {"runs": [provenance(run)], "statistics": "Existing 95% seed-bootstrap intervals for independently summarized phase medians",
++    return {"runs": [provenance(run)], "statistics": "Existing nominal 95% seed-bootstrap intervals for separately summarized phase medians",
+             "measurement": "Synchronized diagnostic pass only; phase medians are not an additive decomposition of the total median"}
+ 
+ 
+@@ -476,11 +487,16 @@
+     file = panel.get("file", known[0] if known else None)
+     if not file:
+         raise MissingData("Generic CSV panels require an explicit file")
++    root_name = panel.get("csv_root", "legacy")
++    roots = {"legacy": args.theory_dir, "connected": args.connected_theory_dir}
++    if root_name not in roots:
++        raise MissingData("csv_root must be legacy or connected")
+     path = Path(file)
+     if not path.is_absolute():
+-        if args.theory_dir is None:
+-            raise MissingData("Relative CSV file requires --theory-dir")
+-        path = Path(args.theory_dir) / path
++        if roots[root_name] is None:
++            flag = "--theory-dir" if root_name == "legacy" else "--connected-theory-dir"
++            raise MissingData(f"Relative {root_name} CSV file requires {flag}")
++        path = Path(roots[root_name]) / path
+     path, (headers, rows, sha) = csv_table(path, cache)
+     xkey = panel.get("x", known[1] if known else None)
+     series = panel.get("series", known[3] if known else None)
+@@ -593,7 +609,7 @@
+             ax.set_ylim(bottom=floor / 1.6)
+     if panel.get("x_ticks") is not None:
+         ax.set_xticks(panel["x_ticks"])
+-    return {"csv": str(path), "sha256": sha, "where": where, "series_rows": series_rows,
++    return {"csv": str(path), "csv_root": root_name, "sha256": sha, "where": where, "series_rows": series_rows,
+             "data_role": panel.get("data_role", "analytical_bound"),
+             "measure": measure, "censored_counts": censored, "censor_floor": floor,
+             "rendering_transformations": transformations,
+@@ -644,6 +660,13 @@
+         ax.xaxis.set_major_formatter(FuncFormatter(lambda v, pos: f"{v:g}"))
+         if panel.get("xscale") == "log":
+             ax.xaxis.set_minor_formatter(FuncFormatter(lambda v, pos: ""))
++    for axis in ("x", "y"):
++        if panel.get(axis + "_ticks") is not None:
++            getattr(ax, "set_" + axis + "ticks")(panel[axis + "_ticks"])
++    if panel.get("tick_fontsize") is not None:
++        ax.tick_params(axis="both", labelsize=finite(panel["tick_fontsize"], "tick_fontsize"))
++    if panel.get("x_tick_rotation") is not None:
++        ax.tick_params(axis="x", labelrotation=finite(panel["x_tick_rotation"], "x_tick_rotation"))
+     ax.grid(axis="y", which="major", color="#DDDDDD", linewidth=0.55, zorder=0)
+     ax.set_axisbelow(True)
+     for edge in ("top", "right"):
+@@ -705,7 +728,9 @@
+         top = 0.98
+         if legend == "shared":
+             unique = {}
+-            for ax in axes.flat:
++            for ax, panel in zip(axes.flat, panels):
++                if panel.get("legend") == "none":
++                    continue
+                 handles, labels = ax.get_legend_handles_labels()
+                 for handle, label in zip(handles, labels):
+                     unique.setdefault(label, handle)
+@@ -717,10 +742,17 @@
+                 top = 1 - (0.19 * rows + 0.10) / height
+                 fig.legend(list(unique.values()), list(unique), loc="upper center",
+                            bbox_to_anchor=(0.5, 0.995), ncol=columns, frameon=False,
+-                           fontsize=8.5, columnspacing=1.2, handlelength=2.1)
++                           fontsize=finite(item.get("legend_fontsize", 8.5), "legend_fontsize"),
++                           columnspacing=1.2, handlelength=2.1)
+         elif legend == "panel":
+-            for ax in axes.flat:
+-                ax.legend(loc="best", frameon=False, fontsize=8.5)
++            for ax, panel in zip(axes.flat, panels):
++                if panel.get("legend") == "none":
++                    continue
++                ax.legend(loc=panel.get("legend_loc", "best"), frameon=False,
++                          fontsize=finite(panel.get("legend_fontsize", item.get("legend_fontsize", 8.5)),
++                                          "legend_fontsize"),
++                          handlelength=panel.get("legend_handlelength", 2.0),
++                          labelspacing=0.35, borderaxespad=0.35)
+         elif legend != "none":
+             raise MissingData("legend must be shared, panel, or none")
+         fig.tight_layout(rect=(0, 0, 1, top), pad=0.6, w_pad=1.0, h_pad=1.0)
+@@ -821,6 +853,7 @@
+     parser.add_argument("--summary", action="append", default=[], help="Repeat for separately summarized datasets")
+     parser.add_argument("--spec", help="Explicit figure/cell-selection JSON")
+     parser.add_argument("--theory-dir")
++    parser.add_argument("--connected-theory-dir", help="Separate output directory of connected_planner.py")
+     parser.add_argument("--out", required=True)
+     parser.add_argument("--dpi", type=int, default=300)
+     parser.add_argument("--inspect-only", action="store_true")
+@@ -841,8 +874,10 @@
+     runs, datasets = load_summaries(args.summary)
+     report = {"schema_version": 1, "script_sha256": digest(__file__), "datasets": datasets,
+               "inventory": inventory(runs), "figures": [],
+-              "statistics_policy": "Use existing five-seed bootstrap intervals from summarize_bench.py; no new bootstrap, pooling, or imputation",
+-              "style": {"double_width_inches": 7.1, "single_width_inches": 3.45, "legend_font_points": 8.5, "palette": PALETTE}}
++              "statistics_policy": "Use existing nominal 95% five-seed bootstrap intervals from summarize_bench.py; no new bootstrap, pooling, or imputation; no exact coverage claim",
++              "analytical_policy": "Read deterministic certificate CSVs without recomputing them; these are not empirical attack frequencies",
++              "csv_roots": {"legacy": args.theory_dir, "connected": args.connected_theory_dir},
++              "style": {"double_width_inches": 7.1, "single_width_inches": 3.45, "default_legend_font_points": 8.5, "palette": PALETTE}}
+     if args.inspect_only:
+         report_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+         print(json.dumps({"inventory_runs": len(runs), "report": str(report_path)}))

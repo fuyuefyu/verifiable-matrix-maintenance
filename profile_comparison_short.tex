@@ -1,0 +1,51 @@
+\paragraph{Comparison with bilinear agreement bounds}
+\label{sec:profile-comparison}
+For this comparison let $T(U,V)=UV^\top B$ be the fresh target and
+$D=T-F$ the discrepancy of an admitted program. Write
+$\operatorname{AR}(D)$, $\operatorname{GR}(D)$, and
+$\operatorname{SR}(D)$ for the analytic rank, the geometric rank, and the
+slice rank of $D$: AR is $-\log_q\Pr[D=0]$ for uniform bilinear inputs,
+GR is the codimension of the zero set over the algebraic closure, and SR
+is the least number of slices, each a linear form in one mode times a
+bilinear form in the other two. Cohen and Moshkovitz (CM) establish
+$\operatorname{AR}(D)\ge(1-\log_q2)\operatorname{GR}(D)$
+\cite[Proposition~4.1 and Fact~4.5]{cohen2022structure}. Rectangular multiplication has geometric
+rank $g=nr-\lfloor r^2/4\rfloor$~\cite{kopparty2023geometric}
+and slice rank $nr$ even over the algebraic closure, by its
+semistability~\cite[Example~24 and Lemma~23]{christandl2023weighted};
+semistability here means that the zero tensor is not in the Zariski
+closure of the orbit under determinant-one basis changes in each mode.\footnote{If a slice decomposition uses dimensions $a_i$ in modes of
+dimensions $m_i$ with $\sum_i a_i<\min_i m_i$, assign weights
+$1-a_i/m_i$ to its subspaces and $-a_i/m_i$ to their complements.
+After clearing denominators, each factor has total weight zero, while
+every supported tensor term has positive weight
+$\ge1-\sum_i a_i/m_i$. This contradicts semistability. The reverse
+bound follows by slicing a smallest mode.}
+Take slice rank over the algebraic closure.
+Subadditivity gives $\operatorname{SR}(D)\ge nr-w$ and
+$\operatorname{GR}(D)\ge g-w$. Cohen--Moshkovitz's proof gives
+$\operatorname{SR}(D)\le2\operatorname{GR}(D)$ over that closure
+\cite[proof of Theorem~3.1]{cohen2022structure}; no descent is needed.
+Since geometric rank is integral, their finite-field analytic-rank
+inequality yields
+\begin{equation}\label{eq:cm-field-comparator}
+ \Pr[F=T]\le (2/q)^{\max\{\lceil(nr-w)/2\rceil,\,g-w,\,0\}},\quad q>2.
+\end{equation}
+An elementary comparison also uses the exact zero probability:
+a uniform-input bilinear map's largest output atom occurs at zero
+\cite[proof of Proposition~5.1]{cohen2022structure}. The fixed range of
+$F$ has at most $q^w$ points, giving
+$B_{\rm range}(w)=\min\{1,q^w\mu(0)\}$. Concavity of $z\mapsto\min\{1,z\}$ gives
+\begin{equation}\label{eq:profile-vs-range}
+ \mu(w)=\E_s\min\{1,q^{w-ns}\}\le B_{\rm range}(w).
+\end{equation}
+This is strict for every integer $0<w<nr$: the positive rank-zero
+mass makes $\mu(w)<q^w\mu(0)$, and positive full-rank mass makes
+$\mu(w)<1$. At $w=0$ the two range bounds coincide exactly.
+At $n=16,r=4,q=17,w=56$, $\mu(w)=1.434\times10^{-10}$,
+$B_{\rm range}(w)=1.426\times10^{-5}$, and
+\eqref{eq:cm-field-comparator} gives $1.916\times10^{-4}$.
+The rank-conditioned argument also covers $q=2$, where the geometric
+comparison's coefficient vanishes. Below a certified tensor-rank
+threshold, all three bounds can also use the common cap $2/q-1/q^2$;
+checking then applies $p\mapsto p+(1-p)q^{-t}$.

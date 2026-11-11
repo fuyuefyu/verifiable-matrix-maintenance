@@ -1,0 +1,18 @@
+\begin{tikzpicture}[
+  box/.style={draw=black!65,rounded corners=2pt,fill=blue!4,
+    text width=4.4cm,minimum height=1.42cm,align=center,inner sep=5pt},
+  flow/.style={-{Stealth[length=2mm]},thick},font=\small]
+\node[box] (plan) at (0,0) {\textbf{Select program and gate budget}\\
+Paid state and full history\\
+Fix the homogeneous program};
+\node[box] (compute) at (5.65,0) {\textbf{Disclose fresh factors and evaluate}\\
+Receive the new record batch\\
+Form the complete increment};
+\node[box] (verify) at (11.3,0) {\textbf{Freeze candidate and verify}\\
+Draw independent random check vectors\\
+Check and commit, or reject and end this sequence};
+\draw[flow] (plan) -- node[above,font=\scriptsize]{fresh factors} (compute);
+\draw[flow] (compute) -- node[above,font=\scriptsize]{complete candidate} (verify);
+\draw[flow] (verify.south) -- ++(0,-0.43) -| node[pos=.25,below,font=\scriptsize]
+{On acceptance, retain products and transcripts for the next round} (plan.south);
+\end{tikzpicture}

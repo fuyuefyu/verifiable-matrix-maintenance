@@ -1,0 +1,48 @@
+\subsection{Heterogeneous adaptive acceptance}\label{sec:heterogeneous}
+\begin{theorem}[Stateful aggregate bound]\label{thm:fresh-stateful}
+For the prescribed $k$ rounds, assume the conditional escape bounds of
+Lemma~\ref{lem:conditional-escape} hold on every reachable pre-input history,
+including histories with incorrectly accepted updates. Let $t_j\ge1$ be
+predetermined and the check vectors follow~\eqref{eq:fresh-check}. The
+escape parameters are predetermined history-uniform bounds as defined in
+Section~\ref{sec:escape}, not history-varying realizations. Suppose
+$\sum_j w_j\le W$ on every path. Put
+$b=\min\{k,\lfloor W/R\rfloor\}$,
+$\theta_j=1-\lambda_{U,j}\lambda_{V,j}$ and
+$a_j=\theta_j+(1-\theta_j)q^{-t_j}$. Then
+\begin{equation}\label{eq:fresh-w3}
+\Prb[\text{all $k$ rounds execute and accept}]
+\le\max_{\substack{E\subseteq[k]\\ |E|\le b}}\prod_{j\notin E}a_j.
+\end{equation}
+The programs and allocations may adapt to the complete observed history;
+an abort or rejection fails this event. The same maximum with $\theta_j$
+in place of $a_j$ bounds the probability that all $k$ rounds execute and
+their increments are exact; an abort before round $k$ fails this event.
+\end{theorem}
+\begin{proof}
+Write $T_j=U_jV_j^\top B$ and $D_j=F_j(U_j,V_j)-T_j$.
+On every realized pre-input history, $F_j$ is fixed. If $w_j<R$,
+Lemma~\ref{lem:fresh-tensor} gives a nonzero bilinear discrepancy
+coordinate, so Lemma~\ref{lem:conditional-escape} gives
+$\Prb[D_j=0\mid\mathcal H_j^-]\le\theta_j$. This argument does not
+require a genuine stored reference. The check subtracts the same reference
+used to form the candidate, and is exactly $D_jz_{j,h}=0$. Given the
+factors and frozen candidate, a nonzero $D_j$ passes all independent
+vectors with probability $q^{-t_j\operatorname{rank}(D_j)}\le q^{-t_j}$;
+thus a cheap round accepts with conditional probability at most $a_j$.
+An expensive round ($w_j\ge R$) accepts with probability at most one.
+
+At most $b$ rounds are expensive on any path. For $s$ remaining expensive
+allowances, set $V_{k+1}(s)=1$ and recursively define
+$V_j(s)=\max\{a_jV_{j+1}(s),V_{j+1}(s-1)\}$, omitting the second term
+when $s=0$. Backward induction over complete histories bounds the remaining
+all-accept probability by $V_j(s)$: the cheap branch uses its conditional
+acceptance bound and the worst continuation after each accepted history;
+the expensive branch spends one allowance. Randomized choices are averaged,
+and aborts cannot increase success. Expanding the recurrence proves
+\eqref{eq:fresh-w3}; replacing acceptance by $D_j=0$ proves the increment
+statement. No independence across rounds is needed.
+\end{proof}
+
+\paragraph{Conditional protocol composition}
+An implementation transfers the theorem's bound when it enforces the selected program, its evaluation relation, the shared previous-state reference, the pathwise allocation, and the two causal boundaries. If its execution can be coupled to the ideal process except with joint probability $\epsilon$ over the prescribed sequence, the all-accept bound increases by at most $\epsilon$. This follows by a union bound without conditioning freshness on absence of failure. Our local candidate digest fixes bytes before check generation; it is not a public attestation of program execution or physical work. With $E_j=\widehat C_j-C_j$ and $D_j=F_j(U_j,V_j)-U_jV_j^\top B$, accepted states obey $E_j=E_{j-1}+D_j$: an exact increment preserves an existing state error, and later errors can cancel.
