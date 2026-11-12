@@ -38,17 +38,7 @@ The guarantees apply to the stated causal ordering and bilinear class;
 untrusted general-purpose execution still needs an enforcement mechanism.
 The empirical results also identify where reuse stops paying: setup costs,
 candidate freezing, and checking remain visible even when the incremental
-kernel is small. The artifact exposes these stages separately so that a
-future implementation can replace the backend or field without changing the
-certificate calculation. Our conclusions are therefore tied to the measured
-protocol and parameter ranges, while the rank and acceptance statements
-remain valid independently of the selected hardware.
-The artifact keeps these boundaries explicit for later backends and larger
-streams, so measured gains can be separated from certificate assumptions.
-Operationally, the accepted reference advances only after all checks pass;
-a rejected candidate ends the prescribed sequence and remains an audit
-record, preserving the theorem's event semantics in the measured service.
-
+kernel is small.
 \FloatBarrier
 \balance
 \newpage

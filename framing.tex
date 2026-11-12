@@ -12,17 +12,13 @@ accepted intermediate states. Conditional linear escape extends the
 threshold guarantee to nonuniform inputs. Balancing minimizes both
 homogeneous bounds; an exact allocation algorithm handles heterogeneous
 rounds. A $2\times2$ six-product Strassen witness attains the single-round
-bound over every finite field. Exact-field implementations measure full
-updates, including candidate materialization and checks. At $n=4096$,
-update width eight, and $q=65521$, retaining the product reduces GPU
-latency from $161.93$ to $83.16$\,ms, a paired $1.95\times$ speedup.
-Covertype views exercise structured reuse and randomized categorical
-reports that instantiate the nonuniform guarantee. The resulting bounds
-identify encodings meeting a specified work target. In the $q=17$
-allocation study, adapting checks to round parameters saves $10.4\%$
-relative to fixed-prefix round robin, with the minimum certified by the
-exact allocator. The twenty-session CPU comparison saves $1.4\%$ of
-total service and planning time.
+bound over every finite field. Exact-field implementations measure the
+full pipeline, including candidate materialization and checks. Dense
+updates and Covertype views exercise structured reuse, while randomized
+categorical reports instantiate the nonuniform guarantee. The resulting
+profiles connect encodings, checking decisions, and a specified work
+target, and the measurements expose the practical boundary between cached
+state, fresh computation, and verification.
 \end{abstract}
 
 \section{Introduction}\label{sec:introduction}
@@ -47,6 +43,13 @@ adapt its later programs and expenditure to earlier requests. A random
 projection checks a fixed candidate cheaply~\cite{freivalds}; bounding
 accepted computation additionally requires a work model and causal input
 order.
+
+Unlike ordinary maintenance, this setting fixes the program before the
+update and the candidate before the checks. Without these boundaries,
+retained tables can select input-dependent shortcuts or shape candidates
+after seeing the checking vectors. We therefore separate preprocessing,
+fresh gates, materialization, and checking, and target a composable
+acceptance statement for a prescribed update sequence.
 
 We use a fixed invertible $B\in\F_q^{n\times n}$. Before each pair of
 factors $U,V\in\F_q^{n\times r}$ is disclosed, the prover fixes a
