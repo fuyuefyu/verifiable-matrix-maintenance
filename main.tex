@@ -45,6 +45,9 @@ protocol and parameter ranges, while the rank and acceptance statements
 remain valid independently of the selected hardware.
 The artifact keeps these boundaries explicit for later backends and larger
 streams, so measured gains can be separated from certificate assumptions.
+Operationally, the accepted reference advances only after all checks pass;
+a rejected candidate ends the prescribed sequence and remains an audit
+record, preserving the theorem's event semantics in the measured service.
 
 \FloatBarrier
 \balance
