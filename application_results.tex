@@ -14,7 +14,16 @@ and $1.781\times10^{-3}$ for OUE; their ratio is $1.133$
 ($[1.123,1.142]$). Thus SUE's stronger work certificate is accompanied by
 about $13\%$ higher whole-table root mean MSE, exposing a measurable
 accuracy--work-guarantee tradeoff. The full variance derivation and all
-prefix-level cells are in the supplement.
+prefix-level cells are in the supplement. For completeness, if
+$\widehat H$ is the released count table, we report
+$\mathrm{MSE}=n^{-2}\lVert\widehat H/N-H/N\rVert_F^2$. Writing
+$\sigma_0^2=\beta(1-\beta)/(p-\beta)^2$ and
+$\sigma_1^2=p(1-p)/(p-\beta)^2$, independence gives the per-record
+cell-variance sum $[(n-1)\sigma_0^2+\sigma_1^2+1]^2-1$.
+For the equal-parameter strata this predicts
+$\mathbb E[\mathrm{MSE}]_{\mathrm{SUE}}=47/(20N)$ and
+$\mathbb E[\mathrm{MSE}]_{\mathrm{OUE}}=1925689/(1036800N)$,
+which are the curves used in the figure.
 
 \paragraph{From a target to measured checking cost}
 At $q=17$, the exact allocator (OPT) certifies the minimum of $767$ checks for
@@ -24,6 +33,11 @@ The specialized greedy procedure agrees with exhaustive enumeration on the
 small validation cases. Complete plan generation costs are $3.473$ and
 $2.743$\,ms for OPT and RR, and the twenty-session service-plus-planning
 totals are $983.342$ and $997.488$\,ms, a $1.4\%$ saving for OPT.
+The adjacent budgets of 766 and 855 checks fail their exact target tests,
+so the one-check difference is material at this tail probability. Across
+the frozen validation set, the allocator agrees with exhaustive enumeration
+on 162 small cases (6,804 allocations) and 56 full-size comparisons;
+certificate-marginal greedy reaches the same 767-check schedule.
 
 \paragraph{Fresh-input service at the integrity setting}
 At $q=65521$, the common integrity certificate
@@ -34,6 +48,20 @@ These are analytical certificates under the stated hypotheses, not measured
 attack probabilities. Table~\ref{tab:connected-live} reports twenty fresh
 streams per encoding and backend; all $160$ replay/live streams complete
 their $512$ rounds and match direct integer reconstruction.
+
+\paragraph{Setup-inclusive timing diagnostics}
+The cached structured path separates one-time factorization from the
+per-update kernel. At $n=1024,b=8$, full product construction takes
+$1.483$\,ms, the generic increment $0.0702$\,ms, and the cached increment
+$0.0588$\,ms; candidate freezing and checking add $3.032$ and $0.441$\,ms.
+Across 256 updates, setup-inclusive medians are $1750.736$\,ms for
+recomputation, $1330.161$\,ms for generic maintenance, and
+$1325.996$\,ms for cached factorization. The CPU extension at $n=1024$
+takes $10.234$ versus $21.468$\,ms, while its setup-inclusive totals are
+$2645.888$ and $5520.294$\,ms; the corresponding cache ratio is
+$1.020\times$ with interval $[1.010,1.029]$. GPU speedups at $n=256$
+and $512$ are $0.932$ and $0.982$, so those settings remain within parity
+once setup is included.
 
 \begin{table}[t]
 \caption{Median milliseconds per 512-round fresh-input $q=65521$ stream on Spark-ebaf CPU and fy RTX 5090 GPU0.}

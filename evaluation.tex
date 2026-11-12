@@ -63,3 +63,73 @@ and setup-inclusive stage timings are reported in the supplement and
 remain in the artifact.
 
 \input{application_results}
+
+\begin{figure*}[t]
+  \centering
+  \includegraphics[width=\textwidth]{figures/application_results.pdf}
+  \vspace{1mm}
+  \includegraphics[width=\textwidth]{figures/view_costs.pdf}
+  \caption{Covertype diagnostics returned from the supplement: randomized-view
+  accuracy and checking cost (top), and row-replacement cumulative and phase
+  costs for recomputation, incremental maintenance, and cached factorization
+  (bottom).}
+  \label{fig:covertype-diagnostics}
+\end{figure*}
+
+\subsection{Reproducibility boundaries and artifact checks}
+The reported medians retain the boundary between one-time preparation,
+candidate formation, and checking. This separation matters for a maintained
+view: a cached factorization is paid before the first update, whereas a
+fresh-input certificate is charged on every accepted round. The artifact
+therefore stores the source identity, workload seed, setup interval, active
+kernel interval, synchronization point, and acceptance transcript for each
+cell. A replayed report tape is tagged separately from a fresh operating-system
+coin stream, so the former checks deterministic reconstruction while the
+latter checks the stated online randomness model. The complete Covertype
+diagnostics are shown together in Figure~\ref{fig:covertype-diagnostics}.
+
+The dense engine uses $q=65521$, $n=4096$, $r=8$, and $t=2$ for the primary
+comparison. Across four GB10 devices, the corresponding dense speedups range
+from $1.225\times$ to $1.925\times$; devices are reported separately because
+their memory systems are not pooled. For the structured view, the 54-feature
+Covertype construction uses $n=1024$, $b=8$, and $t=2$. At smaller dimensions,
+GPU speedups of $0.932$ and $0.982$ at $n=256$ and $512$ show why the
+setup-inclusive totals are retained beside per-update latency. The CPU run
+uses the same frozen factors and seed order, but is reported as an extension
+rather than merged into the GPU population.
+
+The integrity-service table also separates planning from execution. The
+twenty-session totals include serialization, program materialization, fresh
+source pairing, and the 512-round replay or live stream. Every one of the 160
+streams completed all rounds and matched direct integer reconstruction. The
+repository's dry-run path checks the frozen configuration and source hashes;
+it does not download data or claim a new scientific execution. These checks
+make the numerical claims auditable while keeping hardware-dependent reruns
+explicit.
+
+\subsection{Scope of the empirical claims}
+The finite-field engine and the randomized categorical view answer different
+questions. In the engine, every accepted increment is compared with an exact
+field reconstruction, so the measured latency isolates maintained state,
+candidate materialization, and checking. In the categorical view, the report
+is intentionally noisy and the utility target is an estimate of the original
+count table. We therefore use the former to measure reuse cost and the latter
+to measure the accuracy--certificate tradeoff; neither experiment is used to
+infer the other's population-level behavior.
+
+The main grid contains five seeds per cell, and the intervals summarize those
+seed-level summaries rather than individual method rounds. This preserves the
+paired design for speedups but leaves limited resolution for distributional
+claims. The six long-stream runs and the twenty-session service study are
+reported as frozen extensions with their own denominators. They demonstrate
+that the implementation completes the prescribed sequence and that the
+certificate is operational at the stated parameters, while avoiding an
+unsupported extrapolation to unseen workloads or devices.
+
+The causal ordering is enforced in the experiment harness: the program and
+its allocation are fixed before fresh factors are disclosed, and the complete
+candidate is copied before checking vectors are sampled. A digest is retained
+for dense candidates, while the finite-field service uses an immutable matrix
+snapshot. These measures make the experiment match the theorem's boundary;
+they do not claim that an arbitrary untrusted worker will enforce that
+boundary without an external protocol or trusted execution mechanism.
